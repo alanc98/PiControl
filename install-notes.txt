@@ -1,0 +1,28 @@
+These are the packages I had to install for my Pi-Sat setup 
+
+sudo apt-get install cmake
+sudo apt-get install python-zmq
+sudo apt-get install libzmq3-devq
+sudo apt-get install git
+sudo apt-get install build-essential python-dev python-pip
+sudo apt-get install python-imaging python-smbus
+sudo apt-get install python-psutil
+sudo pip install RPi.GPIO
+
+git clone https://github.com/adafruit/Adafruit_Python_SSD1306.git
+cd Adafruit_Python_SSD1306
+sudo python setup.py install
+
+git clone https://github.com/adafruit/Adafruit_Python_BMP.git
+cd Adafruit_Python_BMP.git
+sudo python setup.py install
+
+git clone https://github.com/adafruit/Adafruit_Python_LSM303.git
+cd Adafruit_Python_LSM303
+sudo python setup.py install
+
+# adafruit python LUX  (2561 LUX sensor ) 
+sudo pip install tsl2561
+
+# Setting up a Pi as an Access Point
+https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md
