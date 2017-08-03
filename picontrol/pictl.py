@@ -27,7 +27,7 @@ UDP_COMMAND_PORT = 8080
 # will send it's telemetry packets
 # This will change depending on your ground system host
 #
-UDP_TLM_IP = '192.168.0.209'
+UDP_TLM_IP = '192.168.1.2'
 
 # 
 # This is the port for the picontrol telemetry process
