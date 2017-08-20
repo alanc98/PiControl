@@ -17,30 +17,41 @@ if [ "$_IP" ]; then
   printf "My IP address is %s\n" "$_IP"
 fi
 
+
 #
-# Start the PiSat/PiControl support software
+# Start the piui user interface
+# 
+# Note: This currently runs on the AdaFruit SSD1306 128x64 OLED
+#       screen. The input is driven by 3 GPIO buttons. See
+#       the source for configuration
+#
+python /home/pi/PiControl/piui/piui-menu.py &
+
+
+#
+# Start the sensor-server 
 #
 # Sensor server - ZeroMQ based sensor server
 # Start one of the sensor servers depending on the hardware
 # that is attached. 
 # Make sure the corresponding picontrol support module is started as well
 #
-# python /home/pi/pisat/sensor-server/adafruit-sensors/sensor-server.py &
-python /home/pi/pisat/sensor-server/enviro-phat/sensor-server.py &
+# python /home/pi/PiControl/sensor-server/adafruit-sensors/sensor-server.py &
+python /home/pi/PiControl/sensor-server/enviro-phat/sensor-server.py &
 
 #
 # PiControl
 # Can comment out/clone picontrol-sensor and picontrol-executive if needed
 # 
-python /home/pi/pisat/picontrol/picontrol-scheduler.py &
-python /home/pi/pisat/picontrol/picontrol-command.py &
-python /home/pi/pisat/picontrol/picontrol-executive.py &
-python /home/pi/pisat/picontrol/picontrol-telemetry.py &
+python /home/pi/PiControl/picontrol/picontrol-scheduler.py &
+python /home/pi/PiControl/picontrol/picontrol-command.py &
+python /home/pi/PiControl/picontrol/picontrol-executive.py &
+python /home/pi/PiControl/picontrol/picontrol-telemetry.py &
 
 #
 # Start one of the sensor support modules
 # 
-# python /home/pi/pisat/picontrol/picontrol-adafruit-sensors.py &
-python /home/pi/pisat/picontrol/picontrol-enviro-phat.py &
+# python /home/pi/PiControl/picontrol/picontrol-adafruit-sensors.py &
+python /home/pi/PiControl/picontrol/picontrol-enviro-phat.py &
 
 exit 0
