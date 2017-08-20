@@ -21,8 +21,12 @@ fi
 # Start the PiSat/PiControl support software
 #
 # Sensor server - ZeroMQ based sensor server
+# Start one of the sensor servers depending on the hardware
+# that is attached. 
+# Make sure the corresponding picontrol support module is started as well
 #
-python /home/pi/pisat/sensor-server/sensor-server.py &
+# python /home/pi/pisat/sensor-server/adafruit-sensors/sensor-server.py &
+python /home/pi/pisat/sensor-server/enviro-phat/sensor-server.py &
 
 #
 # PiControl
@@ -31,7 +35,12 @@ python /home/pi/pisat/sensor-server/sensor-server.py &
 python /home/pi/pisat/picontrol/picontrol-scheduler.py &
 python /home/pi/pisat/picontrol/picontrol-command.py &
 python /home/pi/pisat/picontrol/picontrol-executive.py &
-python /home/pi/pisat/picontrol/picontrol-sensor.py &
 python /home/pi/pisat/picontrol/picontrol-telemetry.py &
+
+#
+# Start one of the sensor support modules
+# 
+# python /home/pi/pisat/picontrol/picontrol-adafruit-sensors.py &
+python /home/pi/pisat/picontrol/picontrol-enviro-phat.py &
 
 exit 0

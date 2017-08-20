@@ -3,6 +3,7 @@
 #    This should become a class 
 # 
 
+import zmq
 
 #
 # ZeroMQ message ports for REQ/REP
@@ -40,4 +41,12 @@ UDP_TLM_PORT = 8081
 # 
 CFS_PATH = '/home/pi/pisat/cfs/build/exe/cpu1'
 CFS_BINARY = './core-cpu1'
+
+#
+# Helper Function to setup a ZMQ subscription
+#
+def SubscribeToFilter(FilterText, SubSocket):
+   if isinstance(FilterText, bytes):
+      FilterText = FilterText.decode('ascii')
+   SubSocket.setsockopt_string(zmq.SUBSCRIBE, FilterText)
 

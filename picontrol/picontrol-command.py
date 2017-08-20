@@ -4,6 +4,9 @@
 #   Reads from UDP port from an external command source 
 #   Binds PUB socket to ZMQ_COMMAND_PORT 
 #
+#   Subscribes to:
+#     Currently nothing - may want to subscribe to housekeeping requests
+#
 import sys
 import zmq
 import time

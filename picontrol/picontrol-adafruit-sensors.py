@@ -49,23 +49,13 @@ pub_socket.bind('tcp://*:' + pictl.ZMQ_SENSOR_PORT)
 sens_srv_socket = context.socket(zmq.REQ)
 sens_srv_socket.connect('tcp://localhost:' + pictl.ZMQ_SENSOR_SERVER_PORT)
 
-# Setup filter for scheduler packets - uncomment if needed
-# onehz_filter = "SCHD001"
-# if isinstance(onehz_filter, bytes):
-#     onehz_filter = onehz_filter.decode('ascii')
-# sub_socket.setsockopt_string(zmq.SUBSCRIBE, onehz_filter)
+#
+# Setup subscription filters
+#
+pictl.SubscribeToFilter('SCHD002',sub_socket)
+pictl.SubscribeToFilter('SENS001',sub_socket)
+# pictl.SubscribeToFilter('SCHD001',sub_socket)
 
-# Setup filter for scheduler packets
-fifthhz_filter = "SCHD002"
-if isinstance(fifthhz_filter, bytes):
-    fifthhz_filter = fifthhz_filter.decode('ascii')
-sub_socket.setsockopt_string(zmq.SUBSCRIBE, fifthhz_filter)
-
-# Setup filter for command packets
-sens_filter = "SENS001"
-if isinstance(sens_filter, bytes):
-    sens_filter = sens_filter.decode('ascii')
-sub_socket.setsockopt_string(zmq.SUBSCRIBE, sens_filter)
 
 while True:
    try:

@@ -54,41 +54,16 @@ sub_socket.connect('tcp://localhost:' + pictl.ZMQ_COMMAND_PORT)
 pub_socket = context.socket(zmq.PUB)
 pub_socket.bind('tcp://*:' + pictl.ZMQ_EXECUTIVE_PORT)
 
-# Setup filter for scheduler packets
-# onehz_filter = "SCHD001"
-# if isinstance(onehz_filter, bytes):
-#     onehz_filter = onehz_filter.decode('ascii')
-# sub_socket.setsockopt_string(zmq.SUBSCRIBE, onehz_filter)
 
-# Setup filter for scheduler packets
-fifthhz_filter = "SCHD002"
-if isinstance(fifthhz_filter, bytes):
-    fifthhz_filter = fifthhz_filter.decode('ascii')
-sub_socket.setsockopt_string(zmq.SUBSCRIBE, fifthhz_filter)
-
-# Setup filter for command packets
-exec_filter = "EXEC001"
-if isinstance(exec_filter, bytes):
-    exec_filter = exec_filter.decode('ascii')
-sub_socket.setsockopt_string(zmq.SUBSCRIBE, exec_filter)
-
-# Setup filter for command packets
-exec_filter = "EXEC002"
-if isinstance(exec_filter, bytes):
-    exec_filter = exec_filter.decode('ascii')
-sub_socket.setsockopt_string(zmq.SUBSCRIBE, exec_filter)
-
-# Setup filter for command packets
-exec_filter = "EXEC003"
-if isinstance(exec_filter, bytes):
-    exec_filter = exec_filter.decode('ascii')
-sub_socket.setsockopt_string(zmq.SUBSCRIBE, exec_filter)
-
-# Setup filter for command packets
-exec_filter = "EXEC004"
-if isinstance(exec_filter, bytes):
-    exec_filter = exec_filter.decode('ascii')
-sub_socket.setsockopt_string(zmq.SUBSCRIBE, exec_filter)
+#
+# Setup subscription filters
+#
+pictl.SubscribeToFilter('SCHD002',sub_socket)
+# pictl.SubscribeToFilter('SCHD001',sub_socket)
+pictl.SubscribeToFilter('EXEC001',sub_socket)
+pictl.SubscribeToFilter('EXEC002',sub_socket)
+pictl.SubscribeToFilter('EXEC003',sub_socket)
+pictl.SubscribeToFilter('EXEC004',sub_socket)
 
 while True:
    try:
