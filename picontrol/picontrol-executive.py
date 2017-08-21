@@ -82,10 +82,14 @@ while True:
              exec_err_counter += 1
              print('ERROR: cFS is already running')   
           else:
-             proc = subprocess.Popen([pictl.CFS_BINARY], cwd=pictl.CFS_PATH, shell=False)
-             print('  Process started:',proc.pid)
-             exec_cmd_counter += 1
-             exec_cfs_started = 1 
+             try:
+                proc = subprocess.Popen([pictl.CFS_BINARY], cwd=pictl.CFS_PATH, shell=False)
+                print('  Process started:',proc.pid)
+                exec_cmd_counter += 1
+                exec_cfs_started = 1 
+             except:
+                exec_err_counter += 1
+                exec_cfs_started = 1
       elif cmd_tokens[0] == 'EXEC002':
           print('Received EXEC command 002 - Reboot command')
           proc = subprocess.Popen('reboot', shell=False)
