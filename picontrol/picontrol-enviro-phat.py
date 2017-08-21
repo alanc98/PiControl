@@ -102,7 +102,7 @@ while True:
           alt_tokens = alt_string.split('=')
           # print('Altitude = ',alt_tokens[1])
           
-          telemetry_string = 'TELM005,' + temp_tokens[1] + ',' \ 
+          telemetry_string = 'TELM005,' + temp_tokens[1] + ',' \
                              + press_tokens[1] + ',' + alt_tokens[1] 
           print telemetry_string
           pub_socket.send_string(telemetry_string)
