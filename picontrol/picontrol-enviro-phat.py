@@ -33,6 +33,9 @@ sensor_cmd_counter = 0
 # Global - Command error counter
 sensor_err_counter = 0
 
+# Global - LED status
+sensor_led_on = 0
+
 # Global ZeroMQ context
 context = zmq.Context()
 
@@ -71,7 +74,16 @@ while True:
       print(string)
       if cmd_tokens[0] == 'SCHD002':
           #
-          # Collect and send telemetry for a sensor
+          # Send command counters and LED status
+          #
+          telemetry_string = 'TELM004,' + str(sensor_cmd_counter) + ',' \
+                             + str(sensor_err_counter) + \
+                             ',' + str(sensor_led_on) 
+          print telemetry_string
+          pub_socket.send_string(telemetry_string)
+          
+          #
+          # Collect and send telemetry for Temp, Pressure , altitude
           #
           sens_srv_socket.send("SENSOR_REQ,DEV=EPH_BMP,CMD=READ,SENSOR_REQ_END")
           sensor_message = sens_srv_socket.recv()
@@ -90,8 +102,7 @@ while True:
           alt_tokens = alt_string.split('=')
           # print('Altitude = ',alt_tokens[1])
           
-          telemetry_string = 'TELM002,' + str(sensor_cmd_counter) + ',' \
-                             + str(sensor_err_counter) + ',' + temp_tokens[1] + ',' \
+          telemetry_string = 'TELM005,' + temp_tokens[1] + ',' \ 
                              + press_tokens[1] + ',' + alt_tokens[1] 
           print telemetry_string
           pub_socket.send_string(telemetry_string)
@@ -100,7 +111,7 @@ while True:
           #
 
           #
-          # Collect and send telemetry for a sensor
+          # Collect and send telemetry for light sensor
           #
           sens_srv_socket.send("SENSOR_REQ,DEV=EPH_LIGHT,CMD=READ,SENSOR_REQ_END")
           sensor_message = sens_srv_socket.recv()
@@ -123,7 +134,7 @@ while True:
           lux_tokens = lux_string.split('=')
           # print('lux = ',lux_tokens[1])
 
-          telemetry_string = 'TELM003,' + red_tokens[1] + ',' + green_tokens[1] + \
+          telemetry_string = 'TELM006,' + red_tokens[1] + ',' + green_tokens[1] + \
                              ',' + blue_tokens[1] + ',' + lux_tokens[1]
           print telemetry_string
           pub_socket.send_string(telemetry_string)
@@ -132,7 +143,7 @@ while True:
           #
           
           #
-          # Collect and send telemetry for a sensor
+          # Collect and send telemetry for accel sensor
           #
           sens_srv_socket.send("SENSOR_REQ,DEV=EPH_ACCEL,CMD=READ,SENSOR_REQ_END")
           sensor_message = sens_srv_socket.recv()
@@ -151,7 +162,7 @@ while True:
           z_tokens = z_string.split('=')
           # print('Z = ',z_tokens[1])
 
-          telemetry_string = 'TELM004,' + x_tokens[1] + ',' + y_tokens[1] + ',' + z_tokens[1]   
+          telemetry_string = 'TELM007,' + x_tokens[1] + ',' + y_tokens[1] + ',' + z_tokens[1]   
           print telemetry_string
           pub_socket.send_string(telemetry_string)
 
@@ -171,7 +182,7 @@ while True:
           heading_tokens = heading_string.split('=')
           # print('Heading = ',heading_tokens[1])
 
-          telemetry_string = 'TELM005,' + heading_tokens[1]  
+          telemetry_string = 'TELM008,' + heading_tokens[1]  
           print telemetry_string
           pub_socket.send_string(telemetry_string)
           #
@@ -199,7 +210,7 @@ while True:
           z_tokens = z_string.split('=')
           # print('Z = ',z_tokens[1])
 
-          telemetry_string = 'TELM006,' + x_tokens[1] + ',' + y_tokens[1] + ',' + z_tokens[1]   
+          telemetry_string = 'TELM009,' + x_tokens[1] + ',' + y_tokens[1] + ',' + z_tokens[1]   
           print telemetry_string
           pub_socket.send_string(telemetry_string)
           #
@@ -211,6 +222,7 @@ while True:
       elif cmd_tokens[0] == 'SENS001':
           print('Received SENSOR command 001 - LEDS ON')
           sensor_cmd_counter += 1
+          sensor_led_on = 1
           #
           # Send the LED ON command
           #
@@ -220,6 +232,7 @@ while True:
       elif cmd_tokens[0] == 'SENS002':
           print('Received SENSOR command 002 - LEDS OFF')
           sensor_cmd_counter += 1
+          sensor_led_on = 0
           #
           # Send the LED OFF command
           #
