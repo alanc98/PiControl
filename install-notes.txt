@@ -25,6 +25,11 @@ sudo python setup.py install
 sudo pip install tsl2561
 
 # Pimoroni Enviro Phat support
+curl https://get.pimoroni.com/envirophat | bash
+
+or
+
+sudo apt-get install pimoroni
 
 
 # Setting up a Pi as an Access Point
