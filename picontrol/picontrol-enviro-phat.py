@@ -59,7 +59,6 @@ sens_srv_socket.connect('tcp://localhost:' + pictl.ZMQ_SENSOR_SERVER_PORT)
 pictl.SubscribeToFilter('SCHD002',sub_socket)
 # pictl.SubscribeToFilter('SCHD001',sub_socket)
 pictl.SubscribeToFilter('SENS001',sub_socket)
-pictl.SubscribeToFilter('SENS002',sub_socket)
 
 #
 # For Enviro-phat, gather all data and send in TLM packets
@@ -220,24 +219,26 @@ while True:
       # elif cmd_tokens[0] == 'SCHD001':
       #     print('Received 1hz scheduler message')
       elif cmd_tokens[0] == 'SENS001':
-          print('Received SENSOR command 001 - LEDS ON')
-          sensor_cmd_counter += 1
-          sensor_led_on = 1
-          #
-          # Send the LED ON command
-          #
-          sens_srv_socket.send("SENSOR_REQ,DEV=EPH_LED,CMD=LED_ON,SENSOR_REQ_END")
-          sensor_message = sens_srv_socket.recv()
 
-      elif cmd_tokens[0] == 'SENS002':
-          print('Received SENSOR command 002 - LEDS OFF')
-          sensor_cmd_counter += 1
-          sensor_led_on = 0
-          #
-          # Send the LED OFF command
-          #
-          sens_srv_socket.send("SENSOR_REQ,DEV=EPH_LED,CMD=LED_OFF,SENSOR_REQ_END")
-          sensor_message = sens_srv_socket.recv()
+          if cmd_tokens[1] == 'LEDS_ON':
+              print('Received SENSOR command - LEDS ON')
+              sensor_cmd_counter += 1
+              sensor_led_on = 1
+              #
+              # Send the LED ON command
+              #
+              sens_srv_socket.send("SENSOR_REQ,DEV=EPH_LED,CMD=LED_ON,SENSOR_REQ_END")
+              sensor_message = sens_srv_socket.recv()
+
+          elif cmd_tokens[1] == 'LEDS_OFF':
+             print('Received SENSOR command - LEDS OFF')
+             sensor_cmd_counter += 1
+             sensor_led_on = 0
+             #
+             # Send the LED OFF command
+             #
+             sens_srv_socket.send("SENSOR_REQ,DEV=EPH_LED,CMD=LED_OFF,SENSOR_REQ_END")
+             sensor_message = sens_srv_socket.recv()
 
    except KeyboardInterrupt:
       sys.exit() 

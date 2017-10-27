@@ -54,16 +54,12 @@ sub_socket.connect('tcp://localhost:' + pictl.ZMQ_COMMAND_PORT)
 pub_socket = context.socket(zmq.PUB)
 pub_socket.bind('tcp://*:' + pictl.ZMQ_EXECUTIVE_PORT)
 
-
 #
 # Setup subscription filters
 #
 pictl.SubscribeToFilter('SCHD002',sub_socket)
 # pictl.SubscribeToFilter('SCHD001',sub_socket)
 pictl.SubscribeToFilter('EXEC001',sub_socket)
-pictl.SubscribeToFilter('EXEC002',sub_socket)
-pictl.SubscribeToFilter('EXEC003',sub_socket)
-pictl.SubscribeToFilter('EXEC004',sub_socket)
 
 while True:
    try:
@@ -72,44 +68,45 @@ while True:
       cmd_tokens = string.split(',')
       print(string)
       if cmd_tokens[0] == 'SCHD002':
-          exec_cpu_utilization = psutil.cpu_percent()
-          telemetry_string = 'TELM001,' + str(exec_cmd_counter) + ',' + str(exec_err_counter) + ',' + str(exec_cfs_started) + ',' + format(exec_cpu_utilization,'.2f')
-          # print telemetry_string
-          pub_socket.send_string(telemetry_string)
+         exec_cpu_utilization = psutil.cpu_percent()
+         telemetry_string = 'TELM001,' + str(exec_cmd_counter) + ',' + str(exec_err_counter) + ',' + str(exec_cfs_started) + ',' + format(exec_cpu_utilization,'.2f')
+         # print telemetry_string
+         pub_socket.send_string(telemetry_string)
       elif cmd_tokens[0] == 'EXEC001':
-          print('Received EXEC command 001')
-          if exec_cfs_started == 1:
-             exec_err_counter += 1
-             print('ERROR: cFS is already running')   
-          else:
-             try:
-                proc = subprocess.Popen([pictl.CFS_BINARY], cwd=pictl.CFS_PATH, shell=False)
-                print('  Process started:',proc.pid)
-                exec_cmd_counter += 1
-                exec_cfs_started = 1 
-             except:
-                exec_err_counter += 1
-                exec_cfs_started = 1
-      elif cmd_tokens[0] == 'EXEC002':
-          print('Received EXEC command 002 - Reboot command')
-          proc = subprocess.Popen('reboot', shell=False)
-          exec_cmd_counter += 1
-      elif cmd_tokens[0] == 'EXEC003':
-          print('Received EXEC command 003 - Halt command')
-          proc = subprocess.Popen('halt', shell=False)
-          exec_cmd_counter += 1
-      elif cmd_tokens[0] == 'EXEC004':
-          print('Received EXEC command 004')
-          if exec_cfs_started == 1:
-              print('Kill the cFS process')
-              subprocess.call(["kill", "-9", "%d" % proc.pid])
-              proc.wait()
-              exec_cfs_started = 0 
-              exec_cmd_counter += 1
-          else:
-              print('Error: cFS is not running, nothing to kill')
-              exec_cfs_started = 0 
-              exec_err_counter += 1
+         if cmd_tokens[1] == 'START_CFS':
+            print('Received EXEC command START_CFS')
+            if exec_cfs_started == 1:
+               exec_err_counter += 1
+               print('ERROR: cFS is already running')   
+            else:
+               try:
+                  proc = subprocess.Popen([pictl.CFS_BINARY], cwd=pictl.CFS_PATH, shell=False)
+                  print('  Process started:',proc.pid)
+                  exec_cmd_counter += 1
+                  exec_cfs_started = 1 
+               except:
+                  exec_err_counter += 1
+                  exec_cfs_started = 1
+         elif cmd_tokens[1] == 'REBOOT':
+            print('Received EXEC command - Reboot')
+            proc = subprocess.Popen('reboot', shell=False)
+            exec_cmd_counter += 1
+         elif cmd_tokens[1] == 'SHUTDOWN':
+            print('Received EXEC Halt command')
+            proc = subprocess.Popen('halt', shell=False)
+            exec_cmd_counter += 1
+         elif cmd_tokens[1] == 'STOP_CFS':
+            print('Received EXEC command 004')
+            if exec_cfs_started == 1:
+               print('Kill the cFS process')
+               subprocess.call(["kill", "-9", "%d" % proc.pid])
+               proc.wait()
+               exec_cfs_started = 0 
+               exec_cmd_counter += 1
+            else:
+               print('Error: cFS is not running, nothing to kill')
+               exec_cfs_started = 0 
+               exec_err_counter += 1
    except KeyboardInterrupt:
       if exec_cfs_started == True:
          print('Intercepted Control-C, exiting')
