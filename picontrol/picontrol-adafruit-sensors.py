@@ -72,18 +72,20 @@ while True:
           temp_string = sensor_tokens[2]
           temp_tokens = temp_string.split('=')
           # print('Temperature = ',temp_tokens[1])
+          temperature = float(temp_tokens[1])
 
           press_string = sensor_tokens[3]
           press_tokens = press_string.split('=')
           # print('Pressure = ', press_tokens[1])
+          pressure = float(press_tokens[1])
  
           alt_string = sensor_tokens[4]
           alt_tokens = alt_string.split('=')
           # print('Altitude = ',alt_tokens[1])
-          
-          telemetry_string = 'TELM002,' + str(sensor_cmd_counter) + ',' + str(sensor_err_counter) + ',' + temp_tokens[1] + ',' + press_tokens[1] + ',' + alt_tokens[1] 
-          print telemetry_string
-          pub_socket.send_string(telemetry_string)
+          altitude = float(alt_tokens[1])
+
+          tlm_packet = struct.pack('8shhfff', 'TELM001,' ,0x1003, 0, temperature, pressure, altitude)
+          pub_socket.send(tlm_packet)
       # elif cmd_tokens[0] == 'SCHD001':
       #     print('Received 1hz scheduler message')
       elif cmd_tokens[0] == 'SENS001':

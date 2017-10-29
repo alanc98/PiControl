@@ -17,6 +17,7 @@
 import sys
 import zmq
 import time
+import struct 
 
 import pictl
 
@@ -52,7 +53,6 @@ pub_socket.bind('tcp://*:' + pictl.ZMQ_SENSOR_PORT)
 sens_srv_socket = context.socket(zmq.REQ)
 sens_srv_socket.connect('tcp://localhost:' + pictl.ZMQ_SENSOR_SERVER_PORT)
 
-
 #
 # Setup subscription filters
 #
@@ -75,11 +75,8 @@ while True:
           #
           # Send command counters and LED status
           #
-          telemetry_string = 'TELM004,' + str(sensor_cmd_counter) + ',' \
-                             + str(sensor_err_counter) + \
-                             ',' + str(sensor_led_on) 
-          print telemetry_string
-          pub_socket.send_string(telemetry_string)
+          tlm_packet = struct.pack('8shhhh','TELM001,',0x1004, sensor_cmd_counter, sensor_err_counter , sensor_led_on)
+          pub_socket.send(tlm_packet)
           
           #
           # Collect and send telemetry for Temp, Pressure , altitude
@@ -92,19 +89,21 @@ while True:
           temp_string = sensor_tokens[2]
           temp_tokens = temp_string.split('=')
           # print('Temperature = ',temp_tokens[1])
+          temperature = float(temp_tokens[1])
 
           press_string = sensor_tokens[3]
           press_tokens = press_string.split('=')
           # print('Pressure = ', press_tokens[1])
+          pressure = float(press_tokens[1])
  
           alt_string = sensor_tokens[4]
           alt_tokens = alt_string.split('=')
           # print('Altitude = ',alt_tokens[1])
-          
-          telemetry_string = 'TELM005,' + temp_tokens[1] + ',' \
-                             + press_tokens[1] + ',' + alt_tokens[1] 
-          print telemetry_string
-          pub_socket.send_string(telemetry_string)
+          altitude = float(alt_tokens[1])
+          tlm_packet = struct.pack('8shhfff','TELM001,',0x1005,0,temperature,pressure,altitude)
+             
+          pub_socket.send(tlm_packet)
+
           #
           # end Send tlm for one sensor
           #
@@ -120,23 +119,26 @@ while True:
           red_string = sensor_tokens[2]
           red_tokens = red_string.split('=')
           # print('RED = ',red_tokens[1])
+          red_val = float(red_tokens[1])
 
           green_string = sensor_tokens[3]
           green_tokens = green_string.split('=')
           # print('green = ', green_tokens[1])
+          green_val = float(green_tokens[1])
  
           blue_string = sensor_tokens[4]
           blue_tokens = blue_string.split('=')
           # print('blue = ',blue_tokens[1])
+          blue_val = float(blue_tokens[1])
           
           lux_string = sensor_tokens[5]
           lux_tokens = lux_string.split('=')
           # print('lux = ',lux_tokens[1])
+          lux_val = float(lux_tokens[1])
 
-          telemetry_string = 'TELM006,' + red_tokens[1] + ',' + green_tokens[1] + \
-                             ',' + blue_tokens[1] + ',' + lux_tokens[1]
-          print telemetry_string
-          pub_socket.send_string(telemetry_string)
+          tlm_packet = struct.pack('8shhffff', 'TELM001,',0x1006, 0, red_val, green_val, blue_val, lux_val)
+          pub_socket.send(tlm_packet)
+
           #
           # end Send tlm for one sensor
           #
@@ -152,18 +154,20 @@ while True:
           x_string = sensor_tokens[2]
           x_tokens = x_string.split('=')
           # print('X = ',x_tokens[1])
+          x_val = float(x_tokens[1])
 
           y_string = sensor_tokens[3]
           y_tokens = y_string.split('=')
           # print('Y = ', y_tokens[1])
+          y_val = float(y_tokens[1])
  
           z_string = sensor_tokens[4]
           z_tokens = z_string.split('=')
           # print('Z = ',z_tokens[1])
+          z_val = float(z_tokens[1])
 
-          telemetry_string = 'TELM007,' + x_tokens[1] + ',' + y_tokens[1] + ',' + z_tokens[1]   
-          print telemetry_string
-          pub_socket.send_string(telemetry_string)
+          tlm_packet = struct.pack('8shhfff','TELM001,',0x1007, 0, x_val, y_val, z_val)
+          pub_socket.send(tlm_packet)
 
           #
           # end Send tlm for one sensor
@@ -180,11 +184,10 @@ while True:
           heading_string = sensor_tokens[2]
           heading_tokens = heading_string.split('=')
           # print('Heading = ',heading_tokens[1])
+          heading_val = float(heading_tokens[1])
 
-          telemetry_string = 'TELM008,' + heading_tokens[1]  
-          print telemetry_string
-          pub_socket.send_string(telemetry_string)
-          #
+          tlm_packet = struct.pack('8shhf', 'TELM001,', 0x1008, 0, heading_val)
+          pub_socket.send(tlm_packet)
           #
           # end Send tlm for one sensor
           #
@@ -200,18 +203,20 @@ while True:
           x_string = sensor_tokens[2]
           x_tokens = x_string.split('=')
           # print('X = ',x_tokens[1])
+          x_val = float(x_tokens[1])
 
           y_string = sensor_tokens[3]
           y_tokens = y_string.split('=')
           # print('Y = ', y_tokens[1])
+          y_val = float(y_tokens[1])
  
           z_string = sensor_tokens[4]
           z_tokens = z_string.split('=')
           # print('Z = ',z_tokens[1])
+          z_val = float(z_tokens[1])
 
-          telemetry_string = 'TELM009,' + x_tokens[1] + ',' + y_tokens[1] + ',' + z_tokens[1]   
-          print telemetry_string
-          pub_socket.send_string(telemetry_string)
+          tlm_packet = struct.pack('8shhfff', 'TELM001,', 0x1009, 0, x_val, y_val, z_val)
+          pub_socket.send(tlm_packet)
           #
           # end Send tlm for one sensor
           #
