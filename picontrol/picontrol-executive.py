@@ -70,22 +70,9 @@ while True:
       print(string)
       if cmd_tokens[0] == 'SCHD002':
          exec_cpu_utilization = psutil.cpu_percent()
-         # telemetry_string = 'TELM001,' + \
-         #                   'hhhhf,' + \
-         #                   '0x1001,' + \
-         #                   str(exec_cmd_counter) + ',' + \
-         #                   str(exec_err_counter) + ',' + \
-         #                   str(exec_cfs_started) + ',' + \
-         #                   format(exec_cpu_utilization,'.2f')
-                            # '1:h:0x1001,' + \
-                            # '1:h:' + str(exec_cmd_counter) + ',' + \
-                            # '1:h:' + str(exec_err_counter) + ',' + \
-                            # '1:h:' + str(exec_cfs_started) + ',' + \
-                            # '1:f:' + format(exec_cpu_utilization,'.2f')
-         # print telemetry_string
          telemetry_packet = struct.pack('8shhhhf','TELM001,',0x1001,exec_cmd_counter,exec_err_counter,exec_cfs_started,exec_cpu_utilization)
          pub_socket.send(telemetry_packet)
-         # pub_socket.send_string(telemetry_string)
+
       elif cmd_tokens[0] == 'EXEC001':
          if cmd_tokens[1] == 'START_CFS':
             print('Received EXEC command START_CFS')
