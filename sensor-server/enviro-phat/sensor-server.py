@@ -9,6 +9,9 @@ import zmq
 # Pimoroni enviro pHat support
 import enviro_phat_server
 
+# Raspberry pi camera support
+import pi_camera_server
+
 context = zmq.Context()
 socket = context.socket(zmq.REP)
 socket.bind("tcp://*:5555")
@@ -24,6 +27,8 @@ while True:
       # This is where the right server function is called 
       if message_list[1] == 'DEV=ENVIRO_PHAT':
          message = enviro_phat_server.process_sensor_req(message)
+      elif message_list[1] == 'DEV=PI_CAMERA':
+         message = pi_camera_server.process_sensor_req(message)
       else:
          # unknown message
          message = "SENSOR_REP," + message_list[1] + ",ERROR=UNKNOWN_ID,SENSOR_REP_END"
