@@ -18,7 +18,7 @@ int main (void)
     {
         char buffer [80];
         printf ("Sending Request\n");
-        zmq_send (requester, "SENSOR_REQ,BMP180,CMD=READ,SENSOR_REQ_END", 41, 0);
+        zmq_send (requester, "SENSOR_REQ,DEV=ADA_BMP180,SUB_DEV=BMP,CMD=READ,SENSOR_REQ_END", 41, 0);
         zmq_recv (requester, buffer, 80, 0);
         printf ("Received: %s\n", buffer);
     }

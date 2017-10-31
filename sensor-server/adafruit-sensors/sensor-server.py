@@ -23,9 +23,9 @@ while True:
     message_list = message.split(',')   
 
     # This is where the right server function is called 
-    if message_list[1] == 'TSL2561':
+    if message_list[1] == 'DEV=ADA_TSL2561':
        message = tsl_lux_server.process_req(message)
-    elif message_list[1] == 'BMP180':
+    elif message_list[1] == 'DEV=ADA_BMP180':
        message = bmp180_server.process_req(message)
     else:
        # unknown message

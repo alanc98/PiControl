@@ -12,7 +12,7 @@ def process_req(message):
     lux_value = tsl.lux() 
  
     # format the message
-    message = "SENSOR_REP,TSL2561,LUX=%d,SENSOR_REP_STOP" % (lux_value)
+    message = "SENSOR_REP,DEV=ADA_TSL2561,SUB_DEV=LUX,LUX=%d,SENSOR_REP_STOP" % (lux_value)
 
     # Return the message
     return message

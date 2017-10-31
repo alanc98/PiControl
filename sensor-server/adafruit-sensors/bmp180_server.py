@@ -11,7 +11,7 @@ def process_req(message):
    sealevel_pressure = sensor.read_sealevel_pressure()
  
    # format the message
-   message = "SENSOR_REP,BMP180,TEMP=%.2f,PRES=%.2f,ALT=%.2f,SL_PRES=%.2f,SENSOR_REP_END" % (temp,pressure,altitude,sealevel_pressure)
+   message = "SENSOR_REP,DEV=ADA_BMP180,SUB_DEV=BMP,TEMP=%.2f,PRES=%.2f,ALT=%.2f,SL_PRES=%.2f,SENSOR_REP_END" % (temp,pressure,altitude,sealevel_pressure)
 
    #  Send reply back to client
    return message

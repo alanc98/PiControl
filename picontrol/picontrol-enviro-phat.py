@@ -81,22 +81,22 @@ while True:
           #
           # Collect and send telemetry for Temp, Pressure , altitude
           #
-          sens_srv_socket.send("SENSOR_REQ,DEV=EPH_BMP,CMD=READ,SENSOR_REQ_END")
+          sens_srv_socket.send("SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=BMP,CMD=READ,SENSOR_REQ_END")
           sensor_message = sens_srv_socket.recv()
           sensor_tokens = sensor_message.split(',')
           # print sensor_tokens
 
-          temp_string = sensor_tokens[2]
+          temp_string = sensor_tokens[3]
           temp_tokens = temp_string.split('=')
           # print('Temperature = ',temp_tokens[1])
           temperature = float(temp_tokens[1])
 
-          press_string = sensor_tokens[3]
+          press_string = sensor_tokens[4]
           press_tokens = press_string.split('=')
           # print('Pressure = ', press_tokens[1])
           pressure = float(press_tokens[1])
  
-          alt_string = sensor_tokens[4]
+          alt_string = sensor_tokens[5]
           alt_tokens = alt_string.split('=')
           # print('Altitude = ',alt_tokens[1])
           altitude = float(alt_tokens[1])
@@ -111,27 +111,27 @@ while True:
           #
           # Collect and send telemetry for light sensor
           #
-          sens_srv_socket.send("SENSOR_REQ,DEV=EPH_LIGHT,CMD=READ,SENSOR_REQ_END")
+          sens_srv_socket.send("SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=LUX,CMD=READ,SENSOR_REQ_END")
           sensor_message = sens_srv_socket.recv()
           sensor_tokens = sensor_message.split(',')
           print sensor_tokens
 
-          red_string = sensor_tokens[2]
+          red_string = sensor_tokens[3]
           red_tokens = red_string.split('=')
           # print('RED = ',red_tokens[1])
           red_val = float(red_tokens[1])
 
-          green_string = sensor_tokens[3]
+          green_string = sensor_tokens[4]
           green_tokens = green_string.split('=')
           # print('green = ', green_tokens[1])
           green_val = float(green_tokens[1])
  
-          blue_string = sensor_tokens[4]
+          blue_string = sensor_tokens[5]
           blue_tokens = blue_string.split('=')
           # print('blue = ',blue_tokens[1])
           blue_val = float(blue_tokens[1])
           
-          lux_string = sensor_tokens[5]
+          lux_string = sensor_tokens[6]
           lux_tokens = lux_string.split('=')
           # print('lux = ',lux_tokens[1])
           lux_val = float(lux_tokens[1])
@@ -146,22 +146,22 @@ while True:
           #
           # Collect and send telemetry for accel sensor
           #
-          sens_srv_socket.send("SENSOR_REQ,DEV=EPH_ACCEL,CMD=READ,SENSOR_REQ_END")
+          sens_srv_socket.send("SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=ACCEL,CMD=READ,SENSOR_REQ_END")
           sensor_message = sens_srv_socket.recv()
           sensor_tokens = sensor_message.split(',')
           print sensor_tokens
 
-          x_string = sensor_tokens[2]
+          x_string = sensor_tokens[3]
           x_tokens = x_string.split('=')
           # print('X = ',x_tokens[1])
           x_val = float(x_tokens[1])
 
-          y_string = sensor_tokens[3]
+          y_string = sensor_tokens[4]
           y_tokens = y_string.split('=')
           # print('Y = ', y_tokens[1])
           y_val = float(y_tokens[1])
  
-          z_string = sensor_tokens[4]
+          z_string = sensor_tokens[5]
           z_tokens = z_string.split('=')
           # print('Z = ',z_tokens[1])
           z_val = float(z_tokens[1])
@@ -176,12 +176,12 @@ while True:
           #
           # Collect and send telemetry for a sensor
           #
-          sens_srv_socket.send("SENSOR_REQ,DEV=EPH_HEADING,CMD=READ,SENSOR_REQ_END")
+          sens_srv_socket.send("SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=HEADING,CMD=READ,SENSOR_REQ_END")
           sensor_message = sens_srv_socket.recv()
           sensor_tokens = sensor_message.split(',')
           print sensor_tokens
 
-          heading_string = sensor_tokens[2]
+          heading_string = sensor_tokens[3]
           heading_tokens = heading_string.split('=')
           # print('Heading = ',heading_tokens[1])
           heading_val = float(heading_tokens[1])
@@ -195,22 +195,22 @@ while True:
           #
           # Collect and send telemetry for a sensor
           #
-          sens_srv_socket.send("SENSOR_REQ,DEV=EPH_MAG,CMD=READ,SENSOR_REQ_END")
+          sens_srv_socket.send("SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=MAG,CMD=READ,SENSOR_REQ_END")
           sensor_message = sens_srv_socket.recv()
           sensor_tokens = sensor_message.split(',')
           print sensor_tokens
 
-          x_string = sensor_tokens[2]
+          x_string = sensor_tokens[3]
           x_tokens = x_string.split('=')
           # print('X = ',x_tokens[1])
           x_val = float(x_tokens[1])
 
-          y_string = sensor_tokens[3]
+          y_string = sensor_tokens[4]
           y_tokens = y_string.split('=')
           # print('Y = ', y_tokens[1])
           y_val = float(y_tokens[1])
  
-          z_string = sensor_tokens[4]
+          z_string = sensor_tokens[5]
           z_tokens = z_string.split('=')
           # print('Z = ',z_tokens[1])
           z_val = float(z_tokens[1])
@@ -232,7 +232,7 @@ while True:
               #
               # Send the LED ON command
               #
-              sens_srv_socket.send("SENSOR_REQ,DEV=EPH_LED,CMD=LED_ON,SENSOR_REQ_END")
+              sens_srv_socket.send("SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=LED,CMD=LED_ON,SENSOR_REQ_END")
               sensor_message = sens_srv_socket.recv()
 
           elif cmd_tokens[1] == 'LEDS_OFF':
@@ -242,7 +242,7 @@ while True:
              #
              # Send the LED OFF command
              #
-             sens_srv_socket.send("SENSOR_REQ,DEV=EPH_LED,CMD=LED_OFF,SENSOR_REQ_END")
+             sens_srv_socket.send("SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=LED,CMD=LED_OFF,SENSOR_REQ_END")
              sensor_message = sens_srv_socket.recv()
 
    except KeyboardInterrupt:
