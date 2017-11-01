@@ -88,6 +88,9 @@ while True:
                except:
                   exec_err_counter += 1
                   exec_cfs_started = 1
+         elif cmd_tokens[1] == 'NOOP':
+            print('Received EXEC command - NOOP')
+            exec_cmd_counter += 1
          elif cmd_tokens[1] == 'REBOOT':
             print('Received EXEC command - Reboot')
             proc = subprocess.Popen('reboot', shell=False)

@@ -225,6 +225,10 @@ while True:
       #     print('Received 1hz scheduler message')
       elif cmd_tokens[0] == 'SENS001':
 
+          if cmd_tokens[1] == 'NOOP':
+              print('Received SENSOR command - NOOP')
+              sensor_cmd_counter += 1
+
           if cmd_tokens[1] == 'LEDS_ON':
               print('Received SENSOR command - LEDS ON')
               sensor_cmd_counter += 1
