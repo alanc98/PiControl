@@ -25,7 +25,7 @@ fi
 #       screen. The input is driven by 3 GPIO buttons. See
 #       the source for configuration
 #
-python /home/pi/PiControl/piui/piui-menu.py &
+python /home/pi/PiControl/piui/piui_menu.py &
 
 
 #
@@ -36,22 +36,22 @@ python /home/pi/PiControl/piui/piui-menu.py &
 # that is attached. 
 # Make sure the corresponding picontrol support module is started as well
 #
-# python /home/pi/PiControl/sensor-server/adafruit-sensors/sensor-server.py &
-python /home/pi/PiControl/sensor-server/enviro-phat/sensor-server.py &
+# python /home/pi/PiControl/sensor-server/adafruit-sensors/sensor_server.py &
+python /home/pi/PiControl/sensor-server/enviro-phat/sensor_server.py &
 
 #
 # PiControl
 # Can comment out/clone picontrol-sensor and picontrol-executive if needed
 # 
-python /home/pi/PiControl/picontrol/picontrol-scheduler.py &
-python /home/pi/PiControl/picontrol/picontrol-command.py &
-python /home/pi/PiControl/picontrol/picontrol-executive.py &
-python /home/pi/PiControl/picontrol/picontrol-telemetry.py &
+python /home/pi/PiControl/picontrol/picontrol_scheduler.py &
+python /home/pi/PiControl/picontrol/picontrol_command.py &
+python /home/pi/PiControl/picontrol/picontrol_executive.py &
+python /home/pi/PiControl/picontrol/picontrol_telemetry.py &
 
 #
 # Start one of the sensor support modules
 # 
-# python /home/pi/PiControl/picontrol/picontrol-adafruit-sensors.py &
-python /home/pi/PiControl/picontrol/picontrol-enviro-phat.py &
+# python /home/pi/PiControl/picontrol/picontrol_adafruit-sensors.py &
+python /home/pi/PiControl/picontrol/picontrol_enviro-phat.py &
 
 exit 0
