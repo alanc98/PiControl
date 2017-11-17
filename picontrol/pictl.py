@@ -17,6 +17,7 @@ ZMQ_SCHEDULER_PORT = '5556'
 ZMQ_COMMAND_PORT   = '5557'
 ZMQ_EXECUTIVE_PORT = '5558'
 ZMQ_SENSOR_PORT    = '5559'
+ZMQ_CAMERA_PORT    = '5560'
 
 #
 # UDP port for external commands
@@ -29,6 +30,7 @@ UDP_COMMAND_PORT = 8080
 # This will change depending on your ground system host
 #
 UDP_TLM_IP = '192.168.1.2'
+# UDP_TLM_IP = '127.0.0.1'
 
 # 
 # This is the port for the picontrol telemetry process

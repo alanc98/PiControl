@@ -47,7 +47,7 @@ sub_socket.connect('tcp://localhost:' + pictl.ZMQ_COMMAND_PORT)
 
 # Telemety Socket  
 pub_socket = context.socket(zmq.PUB)
-pub_socket.bind('tcp://*:' + pictl.ZMQ_SENSOR_PORT)
+pub_socket.bind('tcp://*:' + pictl.ZMQ_CAMERA_PORT)
 
 # Sensor server Socket
 sens_srv_socket = context.socket(zmq.REQ)
