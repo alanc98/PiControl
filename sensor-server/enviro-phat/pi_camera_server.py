@@ -70,13 +70,69 @@ def process_still_req(message):
    return message
 
 #
+# Capture a Video ( worker thread )
+#
+def capture_video(image_size, vflip, hflip, file, duration):
+   camera = PiCamera()
+   
+   if image_size == 1:
+      camera.resolution = (1024,768)
+   elif image_size == 2:
+      camera.resolution = (1920,1080)
+   else:
+      camera.resolution = (2592,1944)
+
+   if vflip == True:
+      camera.vflip = True
+
+   if hflip == True:
+      camera.hflip = True
+
+   camera.start_recording(file)
+   camera.wait_recording(duration)
+   camera.stop_recording()
+   camera.close()
+   return 
+
+#
 # VID request function 
 #
-# SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=VIDEO,CMD=CAPTURE,SIZE=1,VFLIP=TRUE,FILE=test1.mp4,DURATION=10,SENSOR_REQ_END
+# SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=VIDEO,CMD=CAPTURE,SIZE=1,VFLIP=TRUE,FILE=test1.h264,DURATION=10,SENSOR_REQ_END
 #
 def process_video_req(message):
    cam_message_list = message.split(',')
    print(cam_message_list)
+
+   size_list = cam_message_list[4].split('=')
+   print(size_list)
+
+   vflip_list = cam_message_list[5].split('=')
+   print(vflip_list)
+
+   file_list = cam_message_list[6].split('=')
+   print(file_list)
+
+   duration_list = cam_message_list[7].split('=')
+   print(duration_list)
+
+   # Gather and convert parameters
+   if size_list[1] == '1':
+      ImageSize = 1
+   elif size_list[1] == '2':
+      ImageSize = 2
+   else:
+      ImageSize = 3
+
+   if vflip_list[1] == 'TRUE':
+      Vflip = True
+   else:
+      Vflip = False
+
+   Duration = int(duration_list[1]) 
+
+   # call thread  
+   capture_video(ImageSize, Vflip, True, file_list[1], Duration)
+
    message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=VIDEO,STATUS=OK,SENSOR_REP_END"
 
    return message
