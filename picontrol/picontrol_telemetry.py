@@ -35,6 +35,7 @@ socket.connect('tcp://localhost:' + pictl.ZMQ_SCHEDULER_PORT) # commands from sc
 socket.connect('tcp://localhost:' + pictl.ZMQ_COMMAND_PORT)   # commands from the command app 
 socket.connect('tcp://localhost:' + pictl.ZMQ_EXECUTIVE_PORT)    # tlm packets from executive
 socket.connect('tcp://localhost:' + pictl.ZMQ_SENSOR_PORT)    # tlm packets from the sensor app
+socket.connect('tcp://localhost:' + pictl.ZMQ_CAMERA_PORT)    # tlm packets from the camera app
 
 #
 # Setup subscription filters

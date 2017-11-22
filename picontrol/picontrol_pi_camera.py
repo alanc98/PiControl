@@ -122,13 +122,44 @@ while True:
               sensor_message = sens_srv_socket.recv()
 
           elif cmd_tokens[1] == 'CAPTURE_VIDEO':
-             print('Received PICAM command - CAPTURE_VIDEO')
-             camera_cmd_counter += 1
-             #
-             # Send the CAPTURE command
-             #
-             # sens_srv_socket.send("SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=LED,CMD=LED_OFF,SENSOR_REQ_END")
-             # sensor_message = sens_srv_socket.recv()
+              cmd_error = False
+              print('Received PICAM command - CAPTURE_VIDEO')
+              if cmd_tokens[2] == 'SIZE_1':
+                 size_var = 'SIZE=1'
+              elif cmd_tokens[2] == 'SIZE_2':
+                 size_var = 'SIZE=2'
+              elif cmd_tokens[2] == 'SIZE_3':
+                 size_var = 'SIZE=3'
+              else:
+                 camera_err_counter += 1
+                 print('Invalid SIZE specified in CAPTURE_VIDEO command')
+                 continue
+                 
+              if cmd_tokens[3] == 'VFLIP_ON':
+                 flip_var = 'VFLIP=TRUE'
+              elif cmd_tokens[3] == 'VFLIP_OFF':
+                 flip_var = 'VFLIP=FALSE'
+              else:
+                 camera_err_counter += 1
+                 print('Invalid VFLIP specified in CAPTURE_VIDEO command')
+                 continue
+       
+              # Duration of video capture
+              duration = cmd_tokens[4].lstrip('0')
+              duration = cmd_tokens[4].lstrip(' ')
+
+              # video filename
+              file_name = cmd_tokens[5]
+
+              camera_cmd_counter += 1
+              #
+              # Send the CAPTURE_IMAGE command
+              #
+              sensor_cmd = 'SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=VIDEO,CMD=CAPTURE,' + size_var + ',' \
+                           + flip_var + ',DURATION=' + duration + ',FILE=' + file_name + ',SENSOR_REQ_END'
+              print ('sending: ' , sensor_cmd )
+              sens_srv_socket.send_string(sensor_cmd)
+              sensor_message = sens_srv_socket.recv()
 
    except KeyboardInterrupt:
       sys.exit() 

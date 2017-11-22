@@ -11,11 +11,11 @@ def capture_still(image_size, vflip, hflip, file):
    camera = PiCamera()
    
    if image_size == 1:
-      camera.resolution = (1024,768)
+      camera.resolution = (640,480)
    elif image_size == 2:
-      camera.resolution = (1920,1080)
+      camera.resolution = (1280,720)
    else:
-      camera.resolution = (2592,1944)
+      camera.resolution = (1920,1080)
 
    if vflip == True:
       camera.vflip = True
@@ -74,6 +74,8 @@ def process_still_req(message):
 #
 def capture_video(image_size, vflip, hflip, file, duration):
    camera = PiCamera()
+
+   print('capture_video -- file is', file)
    
    if image_size == 1:
       camera.resolution = (1024,768)
@@ -109,11 +111,11 @@ def process_video_req(message):
    vflip_list = cam_message_list[5].split('=')
    print(vflip_list)
 
-   file_list = cam_message_list[6].split('=')
-   print(file_list)
-
-   duration_list = cam_message_list[7].split('=')
+   duration_list = cam_message_list[6].split('=')
    print(duration_list)
+
+   file_list = cam_message_list[7].split('=')
+   print(file_list)
 
    # Gather and convert parameters
    if size_list[1] == '1':
@@ -128,6 +130,7 @@ def process_video_req(message):
    else:
       Vflip = False
 
+   print (duration_list[1])
    Duration = int(duration_list[1]) 
 
    # call thread  
