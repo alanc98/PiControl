@@ -11,11 +11,11 @@ def capture_still(image_size, vflip, hflip, file):
    camera = PiCamera()
    
    if image_size == 1:
-      camera.resolution = (640,480)
+      camera.resolution = (1024,768)
    elif image_size == 2:
-      camera.resolution = (1280,720)
-   else:
       camera.resolution = (1920,1080)
+   else:
+      camera.resolution = (2592,1944)
 
    if vflip == True:
       camera.vflip = True
@@ -78,11 +78,11 @@ def capture_video(image_size, vflip, hflip, file, duration):
    print('capture_video -- file is', file)
    
    if image_size == 1:
-      camera.resolution = (1024,768)
+      camera.resolution = (640,480)
    elif image_size == 2:
-      camera.resolution = (1920,1080)
+      camera.resolution = (1280,720)
    else:
-      camera.resolution = (2592,1944)
+      camera.resolution = (1920,1080)
 
    if vflip == True:
       camera.vflip = True
