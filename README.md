@@ -1,4 +1,4 @@
-![Pi Control Logo](/images/PiControl_Logo_v1.jpg)
+![Pi Control Logo by Michael Cudmore](/images/PiControl_Logo_v1.jpg)
 
 # PiControl
 
