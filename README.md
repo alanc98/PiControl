@@ -1,5 +1,8 @@
+![Pi Control Logo](/images/PiControl_Logo_v1.jpg)
+
 # PiControl
-Framework for remote control and data collection from Raspberry Pi Sensors and Apps. 
+
+A Framework for remote control and data collection from Raspberry Pi Sensors and Apps. 
 
 This is a simple Command and Telemetry framework written in Python using the ZeroMQ message library. It includes a COSMOS ground system target (see cosmosrb.com ) with simple commands and telemetry packets. 
 
