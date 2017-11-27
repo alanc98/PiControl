@@ -29,15 +29,15 @@ python /home/pi/PiControl/piui/piui_menu.py &
 
 
 #
-# Start the sensor-server 
+# Start the required sensor-servers
 #
-# Sensor server - ZeroMQ based sensor server
 # Start one of the sensor servers depending on the hardware
 # that is attached. 
 # Make sure the corresponding picontrol support module is started as well
 #
-# python /home/pi/PiControl/sensor-server/adafruit-sensors/sensor_server.py &
-python /home/pi/PiControl/sensor-server/enviro-phat/sensor_server.py &
+python /home/pi/PiControl/sensor-server/adafruit_sensors/sensor_server.py &
+python /home/pi/PiControl/sensor-server/enviro_phat/sensor_server.py &
+python /home/pi/PiControl/sensor-server/pi_camera/sensor_server.py &
 
 #
 # PiControl

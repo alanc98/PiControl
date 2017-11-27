@@ -9,7 +9,7 @@
 #   Publishes: 
 #     Telemetry: localhost ZMQ_SENSOR_PORT  
 # 
-#   Uses REQ/REP Socket: ZMQ_SENSOR_SERVER_PORT
+#   Uses REQ/REP Socket: ZMQ_ADAFRUIT_SENSOR_PORT
 #
 # Todo: Break apart into main and helper functions
 #       Preferably break this apart into a class with global variables in the class
@@ -47,7 +47,7 @@ pub_socket.bind('tcp://*:' + pictl.ZMQ_SENSOR_PORT)
 
 # Sensor server Socket
 sens_srv_socket = context.socket(zmq.REQ)
-sens_srv_socket.connect('tcp://localhost:' + pictl.ZMQ_SENSOR_SERVER_PORT)
+sens_srv_socket.connect('tcp://localhost:' + pictl.ZMQ_ADAFRUIT_SENSOR_PORT)
 
 #
 # Setup subscription filters
