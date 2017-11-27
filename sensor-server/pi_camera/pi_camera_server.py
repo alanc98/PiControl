@@ -71,6 +71,10 @@ def process_still_req(message):
 
 #
 # Capture a Video ( worker thread )
+#   Idea is to spawn a thread to perform this function
+#   The thread could publish status update messages 
+#   If a new thread is spawned for the video it will have to keep a new request 
+#   from being processed, since the camera is busy 
 #
 def capture_video(image_size, vflip, hflip, file, duration):
    camera = PiCamera()
