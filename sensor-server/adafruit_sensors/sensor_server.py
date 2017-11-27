@@ -1,6 +1,6 @@
 #
 # ZMQ REP Server for  
-# Binds REP socket to tcp://*:5555
+# Binds REP socket to tcp://*:5556
 #
 import time
 import zmq
@@ -13,7 +13,7 @@ import bmp180_server
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
-socket.bind("tcp://*:5555")
+socket.bind("tcp://*:5556")
 
 while True:
     #  Wait for next request from client
