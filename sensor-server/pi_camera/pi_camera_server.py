@@ -4,6 +4,12 @@ import time
 import threading
 from   picamera import PiCamera
 
+global video_thread_running 
+
+def init_module():
+   global video_thread_running
+   video_thread_running = False
+
 #
 # Capture a picture ( worker thread )
 #
@@ -77,6 +83,7 @@ def process_still_req(message):
 #   from being processed, since the camera is busy 
 #
 def capture_video(image_size, vflip, hflip, file, duration):
+   global video_thread_running
    camera = PiCamera()
 
    print('capture_video -- file is', file)
@@ -95,9 +102,13 @@ def capture_video(image_size, vflip, hflip, file, duration):
       camera.hflip = True
 
    camera.start_recording(file)
-   camera.wait_recording(duration)
+   for i in range (duration):
+      camera.wait_recording(1)
+      print('Camera is recording..Send ZMQ Status')
+
    camera.stop_recording()
    camera.close()
+   video_thread_running = False 
    return 
 
 #
@@ -106,43 +117,50 @@ def capture_video(image_size, vflip, hflip, file, duration):
 # SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=VIDEO,CMD=CAPTURE,SIZE=1,VFLIP=TRUE,FILE=test1.h264,DURATION=10,SENSOR_REQ_END
 #
 def process_video_req(message):
-   cam_message_list = message.split(',')
-   print(cam_message_list)
+   global video_thread_running
 
-   size_list = cam_message_list[4].split('=')
-   print(size_list)
-
-   vflip_list = cam_message_list[5].split('=')
-   print(vflip_list)
-
-   duration_list = cam_message_list[6].split('=')
-   print(duration_list)
-
-   file_list = cam_message_list[7].split('=')
-   print(file_list)
-
-   # Gather and convert parameters
-   if size_list[1] == '1':
-      ImageSize = 1
-   elif size_list[1] == '2':
-      ImageSize = 2
+   if video_thread_running == True:
+      message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=VIDEO,STATUS=ERROR_BUSY,SENSOR_REP_END"
+      return message
    else:
-      ImageSize = 3
+      cam_message_list = message.split(',')
+      print(cam_message_list)
 
-   if vflip_list[1] == 'TRUE':
-      Vflip = True
-   else:
-      Vflip = False
+      size_list = cam_message_list[4].split('=')
+      print(size_list)
 
-   print (duration_list[1])
-   Duration = int(duration_list[1]) 
+      vflip_list = cam_message_list[5].split('=')
+      print(vflip_list)
 
-   # call thread  
-   capture_video(ImageSize, Vflip, True, file_list[1], Duration)
+      duration_list = cam_message_list[6].split('=')
+      print(duration_list)
 
-   message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=VIDEO,STATUS=OK,SENSOR_REP_END"
+      file_list = cam_message_list[7].split('=')
+      print(file_list)
 
-   return message
+      # Gather and convert parameters
+      if size_list[1] == '1':
+         ImageSize = 1
+      elif size_list[1] == '2':
+         ImageSize = 2
+      else:
+         ImageSize = 3
+
+      if vflip_list[1] == 'TRUE':
+         Vflip = True
+      else:
+         Vflip = False
+
+      print (duration_list[1])
+      Duration = int(duration_list[1]) 
+
+      # Create thread to capture the video
+      video_thread = threading.Thread(target=capture_video, args=(ImageSize, Vflip, True, file_list[1], Duration))
+      video_thread.start()
+      video_thread_running = True 
+
+      message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=VIDEO,STATUS=OK,SENSOR_REP_END"
+      return message
 
 #
 # TIMELAPSE request function 

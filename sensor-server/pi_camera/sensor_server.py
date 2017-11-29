@@ -13,6 +13,10 @@ context = zmq.Context()
 socket = context.socket(zmq.REP)
 socket.bind("tcp://*:5557")
 
+# Need to initalize the global variables first
+# probably should be done as a class, but I'm old :)
+pi_camera_server.init_module()
+
 while True:
    try:
       #  Wait for next request from client
