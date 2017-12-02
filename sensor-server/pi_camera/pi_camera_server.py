@@ -1,15 +1,14 @@
-
 import sys
 import time
 import zmq
 import threading
 from   picamera import PiCamera
 
-global video_thread_running 
+global camera_busy 
 
 def init_module():
-   global video_thread_running
-   video_thread_running = False
+   global camera_busy 
+   camera_busy = False
 
 #
 # Capture a picture ( worker thread )
@@ -84,7 +83,7 @@ def process_still_req(message):
 #   from being processed, since the camera is busy 
 #
 def capture_video(image_size, vflip, hflip, file, duration):
-   global video_thread_running
+   global camera_busy 
    camera = PiCamera()
 
    print('capture_video -- file is', file)
@@ -105,11 +104,14 @@ def capture_video(image_size, vflip, hflip, file, duration):
    camera.start_recording(file)
    for i in range (duration):
       camera.wait_recording(1)
-      print('Camera is recording..Send ZMQ Status')
+      video_status_string = 'SENSOR_PUB,DEV=PI_CAMERA,VIDEO_SECOND=' + str(i) + ',SENSOR_PUB_END'
+      pub_socket.send_string(video_status_string)
+   video_status_string = 'SENSOR_PUB,DEV=PI_CAMERA,VIDEO_DONE,SENSOR_PUB_END'
+   pub_socket.send_string(video_status_string)
 
    camera.stop_recording()
    camera.close()
-   video_thread_running = False 
+   camera_busy = False 
    return 
 
 #
@@ -118,9 +120,9 @@ def capture_video(image_size, vflip, hflip, file, duration):
 # SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=VIDEO,CMD=CAPTURE,SIZE=1,VFLIP=TRUE,FILE=test1.h264,DURATION=10,SENSOR_REQ_END
 #
 def process_video_req(message):
-   global video_thread_running
+   global camera_busy 
 
-   if video_thread_running == True:
+   if camera_busy == True:
       message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=VIDEO,STATUS=ERROR_BUSY,SENSOR_REP_END"
       return message
    else:
@@ -158,7 +160,7 @@ def process_video_req(message):
       # Create thread to capture the video
       video_thread = threading.Thread(target=capture_video, args=(ImageSize, Vflip, True, file_list[1], Duration))
       video_thread.start()
-      video_thread_running = True 
+      camera_busy = True 
 
       message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=VIDEO,STATUS=OK,SENSOR_REP_END"
       return message
@@ -211,6 +213,8 @@ socket.bind("tcp://*:5557")
 #
 # Socket for PUB status messages
 # 
+pub_socket = context.socket(zmq.PUB)
+pub_socket.bind('tcp://*:5558')
 
 
 # Need to initalize the global variables first

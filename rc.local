@@ -37,7 +37,7 @@ python /home/pi/PiControl/piui/piui_menu.py &
 #
 python /home/pi/PiControl/sensor-server/adafruit_sensors/sensor_server.py &
 python /home/pi/PiControl/sensor-server/enviro_phat/sensor_server.py &
-python /home/pi/PiControl/sensor-server/pi_camera/sensor_server.py &
+python /home/pi/PiControl/sensor-server/pi_camera/pi_camera_server.py &
 
 #
 # PiControl
