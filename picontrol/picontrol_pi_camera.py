@@ -44,6 +44,7 @@ context = zmq.Context()
 sub_socket = context.socket(zmq.SUB)
 sub_socket.connect('tcp://localhost:' + pictl.ZMQ_SCHEDULER_PORT)
 sub_socket.connect('tcp://localhost:' + pictl.ZMQ_COMMAND_PORT)
+sub_socket.connect('tcp://localhost:' + pictl.ZMQ_PI_CAMERA_STATUS_PUB_PORT)
 
 # Telemety Socket  
 pub_socket = context.socket(zmq.PUB)
@@ -58,6 +59,7 @@ sens_srv_socket.connect('tcp://localhost:' + pictl.ZMQ_PI_CAMERA_SENSOR_PORT)
 #
 pictl.SubscribeToFilter('SCHD002',sub_socket)
 pictl.SubscribeToFilter('PCAM001',sub_socket)
+pictl.SubscribeToFilter('SENSOR_PUB',sub_socket)
 
 #
 # Accept commands to capture pictures, videos, or timelapse sequences
@@ -76,6 +78,8 @@ while True:
           tlm_packet = struct.pack('8shhhh','TELM001,',0x100A, camera_cmd_counter, camera_err_counter , camera_status)
           pub_socket.send(tlm_packet)
           
+      elif cmd_tokens[0] == 'SENSOR_PUB':
+          print('Video Status:' + string)
       # elif cmd_tokens[0] == 'SCHD001':
       #     print('1hz scheduler message')
       elif cmd_tokens[0] == 'PCAM001':
