@@ -1,6 +1,7 @@
 
 import sys
 import time
+import zmq
 import threading
 from   picamera import PiCamera
 
@@ -194,3 +195,43 @@ def process_sensor_req(message):
 
    return message
 
+#
+# ZMQ REP Server for the Raspberry Pi Camera
+# Binds REP socket to tcp://*:5557
+#
+
+context = zmq.Context()
+
+#
+# Socket for REQ/REP messages
+#
+socket = context.socket(zmq.REP)
+socket.bind("tcp://*:5557")
+
+#
+# Socket for PUB status messages
+# 
+
+
+# Need to initalize the global variables first
+init_module()
+
+while True:
+   try:
+      #  Wait for next request from client
+      message = socket.recv()
+
+      # Depending on the ID, pass it to the needed sensor function
+      message_list = message.split(',')   
+
+      if message_list[1] == 'DEV=PI_CAMERA':
+         message = process_sensor_req(message)
+
+      else:
+         # unknown message
+         message = "SENSOR_REP," + message_list[1] + ",ERROR=UNKNOWN_ID,SENSOR_REP_END"
+
+      #  Send reply back to client
+      socket.send(message)
+   except KeyboardInterrupt:    
+      sys.exit()
