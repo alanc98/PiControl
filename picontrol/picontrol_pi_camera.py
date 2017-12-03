@@ -37,6 +37,9 @@ camera_err_counter = 0
 # Global - camera status
 camera_status = 0
 
+# Global - seconds count
+camera_video_seconds = 0
+
 # Global ZeroMQ context
 context = zmq.Context()
 
@@ -75,11 +78,21 @@ while True:
           #
           # Send command counters and LED status
           #
-          tlm_packet = struct.pack('8shhhh','TELM001,',0x100A, camera_cmd_counter, camera_err_counter , camera_status)
+          tlm_packet = struct.pack('8shhhhh','TELM001,',0x100A, camera_cmd_counter, camera_err_counter , camera_status, camera_video_seconds)
           pub_socket.send(tlm_packet)
           
       elif cmd_tokens[0] == 'SENSOR_PUB':
           print('Video Status:' + string)
+          if cmd_tokens[1] == 'DEV=PI_CAMERA':
+             video_status_tokens = cmd_tokens[2].split('=')
+             if video_status_tokens[0] == 'VIDEO_SECOND':
+                camera_video_seconds = int(video_status_tokens[1]) 
+             elif video_status_tokens[0] == 'VIDEO_DONE':
+                camera_status = 0 
+                camera_video_seconds = 0
+             tlm_packet = struct.pack('8shhhhh','TELM001,',0x100A, camera_cmd_counter, camera_err_counter , camera_status, camera_video_seconds)
+             pub_socket.send(tlm_packet)
+          
       # elif cmd_tokens[0] == 'SCHD001':
       #     print('1hz scheduler message')
       elif cmd_tokens[0] == 'PCAM001':
@@ -126,6 +139,11 @@ while True:
               sensor_message = sens_srv_socket.recv()
 
           elif cmd_tokens[1] == 'CAPTURE_VIDEO':
+              if camera_status == 1:
+                 camera_err_counter += 1
+                 print('Camera is busy!')
+                 continue
+
               cmd_error = False
               print('Received PICAM command - CAPTURE_VIDEO')
               if cmd_tokens[2] == 'SIZE_1':
@@ -155,15 +173,21 @@ while True:
               # video filename
               file_name = cmd_tokens[5]
 
-              camera_cmd_counter += 1
               #
-              # Send the CAPTURE_IMAGE command
+              # Send the CAPTURE_VIDEO command
               #
               sensor_cmd = 'SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=VIDEO,CMD=CAPTURE,' + size_var + ',' \
                            + flip_var + ',DURATION=' + duration + ',FILE=' + file_name + ',SENSOR_REQ_END'
               print ('sending: ' , sensor_cmd )
               sens_srv_socket.send_string(sensor_cmd)
               sensor_message = sens_srv_socket.recv()
+              sensor_msg_tokens = sensor_message.split(',')
+              if sensor_msg_tokens[3] == 'STATUS=OK':
+                 camera_cmd_counter += 1
+                 camera_status = 1
+              else:
+                 camera_err_counter += 1
+              
 
    except KeyboardInterrupt:
       sys.exit() 
