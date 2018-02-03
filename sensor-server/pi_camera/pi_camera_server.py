@@ -5,13 +5,16 @@ import threading
 from   picamera import PiCamera
 
 global camera_busy 
+global camera_abort 
 
 def init_module():
    global camera_busy 
+   global camera_abort
    camera_busy = False
+   camera_abort = False
 
 #
-# Capture a picture ( worker thread )
+# Capture a picture 
 #
 def capture_still(image_size, vflip, hflip, file):
    camera = PiCamera()
@@ -42,38 +45,43 @@ def capture_still(image_size, vflip, hflip, file):
 #
 #
 def process_still_req(message):
+   global camera_busy 
 
-   cam_message_list = message.split(',')
-   print(cam_message_list)
-
-   size_list = cam_message_list[4].split('=')
-   print(size_list)
-
-   vflip_list = cam_message_list[5].split('=')
-   print(vflip_list)
-
-   file_list = cam_message_list[6].split('=')
-   print(file_list)
-
-   # Gather and convert parameters
-   if size_list[1] == '1':
-      ImageSize = 1
-   elif size_list[1] == '2':
-      ImageSize = 2
+   if camera_busy == True:
+      message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=STILL,STATUS=ERROR_BUSY,SENSOR_REP_END"
+      return message
    else:
-      ImageSize = 3
+      cam_message_list = message.split(',')
+      print(cam_message_list)
 
-   if vflip_list[1] == 'TRUE':
-      Vflip = True
-   else:
-      Vflip = False
+      size_list = cam_message_list[4].split('=')
+      print(size_list)
 
-   # call thread  
-   capture_still(ImageSize, Vflip, True, file_list[1])
+      vflip_list = cam_message_list[5].split('=')
+      print(vflip_list)
+
+      file_list = cam_message_list[6].split('=')
+      print(file_list)
+
+      # Gather and convert parameters
+      if size_list[1] == '1':
+         ImageSize = 1
+      elif size_list[1] == '2':
+         ImageSize = 2
+      else:
+         ImageSize = 3
+
+      if vflip_list[1] == 'TRUE':
+         Vflip = True
+      else:
+         Vflip = False
+
+      # call Helper thread  
+      capture_still(ImageSize, Vflip, True, file_list[1])
  
-   message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=STILL,STATUS=OK,SENSOR_REP_END"
+      message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=STILL,STATUS=OK,SENSOR_REP_END"
 
-   return message
+      return message
 
 #
 # Capture a Video ( worker thread )
@@ -115,7 +123,7 @@ def capture_video(image_size, vflip, hflip, file, duration):
    return 
 
 #
-# VID request function 
+# VIDEO request function 
 #
 # SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=VIDEO,CMD=CAPTURE,SIZE=1,VFLIP=TRUE,FILE=test1.h264,DURATION=10,SENSOR_REQ_END
 #
@@ -166,14 +174,107 @@ def process_video_req(message):
       return message
 
 #
+# Capture a Timelapse ( worker thread )
+#   Idea is to spawn a thread to perform this function
+#   The thread could publish status update messages 
+#   If a new thread is spawned for the timelapse it will have to keep a new request 
+#   from being processed, since the camera is busy 
+#
+def capture_timelapse(image_size, vflip, hflip, file_prefix, delay, frames):
+   global camera_busy 
+   camera = PiCamera()
+
+   print('capture_timelapse -- file prefix is', file_prefix)
+   
+   if image_size == 1:
+      camera.resolution = (640,480)
+   elif image_size == 2:
+      camera.resolution = (1280,720)
+   else:
+      camera.resolution = (1920,1080)
+
+   if vflip == True:
+      camera.vflip = True
+
+   if hflip == True:
+      camera.hflip = True
+
+   for i in range(frames):
+      filename = file_prefix + '%04d.jpg' % i
+      print('Capturing file %s' % filename)
+      camera.capture(filename)
+      time.sleep(delay)
+      timelapse_status_string = 'SENSOR_PUB,DEV=PI_CAMERA,FRAME=' + str(i) + ',SENSOR_PUB_END'
+      pub_socket.send_string(timelapse_status_string)
+ 
+   timelapse_status_string = 'SENSOR_PUB,DEV=PI_CAMERA,TIMELAPSE_DONE,SENSOR_PUB_END'
+   pub_socket.send_string(timelapse_status_string)
+
+   camera.close()
+   camera_busy = False 
+   return 
+
+#
 # TIMELAPSE request function 
 #
-# SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=TIMELAPSE,CMD=CAPTURE,SIZE=1,VFLIP=TRUE,DELAY=10,FRAMES=10,SENSOR_REQ_END
+# SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=TIMELAPSE,CMD=CAPTURE,SIZE=1,VFLIP=TRUE,FILE_PRE=timelapse-,DELAY=10,FRAMES=10,SENSOR_REQ_END
+#
+# Timelapse parameters include:
+#   Size
+#   Vflip
+#   File Prefix
+#   Delay between frames
+#   Number of Frames to capture
 #
 def process_timelapse_req(message):
-   cam_message_list = message.split(',')
-   print(cam_message_list)
-   message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=TIMELAPSE,STATUS=OK,SENSOR_REP_END"
+   global camera_busy 
+   if camera_busy == True:
+      message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=TIMELAPSE,STATUS=ERROR_BUSY,SENSOR_REP_END"
+      return message
+   else:
+      cam_message_list = message.split(',')
+      print(cam_message_list)
+
+      size_list = cam_message_list[4].split('=')
+      print(size_list)
+
+      vflip_list = cam_message_list[5].split('=')
+      print(vflip_list)
+
+      file_prefix_list = cam_message_list[6].split('=')
+      print(file_prefix_list)
+
+      delay_list = cam_message_list[7].split('=')
+      print(delay_list)
+
+      frames_list = cam_message_list[8].split('=')
+      print(frames_list)
+
+      # Gather and convert parameters
+      if size_list[1] == '1':
+         ImageSize = 1
+      elif size_list[1] == '2':
+         ImageSize = 2
+      else:
+         ImageSize = 3
+
+      if vflip_list[1] == 'TRUE':
+         Vflip = True
+      else:
+         Vflip = False
+
+      print (delay_list[1])
+      Delay = int(delay_list[1]) 
+
+      print (frames_list[1])
+      Frames = int(frames_list[1])
+
+      # Create thread to capture the video
+      video_thread = threading.Thread(target=capture_timelapse, args=(ImageSize, Vflip, True, file_prefix_list[1], Delay, Frames))
+      video_thread.start()
+      camera_busy = True 
+
+      message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=TIMELAPSE,STATUS=OK,SENSOR_REP_END"
 
    return message
 
