@@ -40,6 +40,9 @@ camera_status = 0
 # Global - seconds count
 camera_video_seconds = 0
 
+# Global - timelapse frame count
+camera_timelapse_frames = 0
+
 # Global ZeroMQ context
 context = zmq.Context()
 
@@ -78,7 +81,7 @@ while True:
           #
           # Send command counters and LED status
           #
-          tlm_packet = struct.pack('8shhhhh','TELM001,',0x100A, camera_cmd_counter, camera_err_counter , camera_status, camera_video_seconds)
+          tlm_packet = struct.pack('8shhhhhh','TELM001,',0x100A, camera_cmd_counter, camera_err_counter , camera_status, camera_video_seconds,camera_timelapse_frames)
           pub_socket.send(tlm_packet)
           
       elif cmd_tokens[0] == 'SENSOR_PUB':
@@ -90,7 +93,13 @@ while True:
              elif video_status_tokens[0] == 'VIDEO_DONE':
                 camera_status = 0 
                 camera_video_seconds = 0
-             tlm_packet = struct.pack('8shhhhh','TELM001,',0x100A, camera_cmd_counter, camera_err_counter , camera_status, camera_video_seconds)
+             elif video_status_tokens[0] == 'TIMELAPSE_FRAME':
+                camera_timelapse_frames = int(video_status_tokens[1]) 
+             elif video_status_tokens[0] == 'TIMELAPSE_DONE':
+                camera_status = 0 
+                camera_timelapse_frames = 0
+
+             tlm_packet = struct.pack('8shhhhhh','TELM001,',0x100A, camera_cmd_counter, camera_err_counter , camera_status, camera_video_seconds,camera_timelapse_frames)
              pub_socket.send(tlm_packet)
           
       # elif cmd_tokens[0] == 'SCHD001':
@@ -120,7 +129,7 @@ while True:
                  
               if cmd_tokens[3] == 'VFLIP_ON':
                  flip_var = 'VFLIP=TRUE'
-              elif cmd_tokens[3] == 'VFLIP_OFF':
+              elif cmd_tokens[3] == 'VFLIP_OF':
                  flip_var = 'VFLIP=FALSE'
               else:
                  camera_err_counter += 1
@@ -138,6 +147,7 @@ while True:
               sens_srv_socket.send_string(sensor_cmd)
               sensor_message = sens_srv_socket.recv()
 
+          # --------------------------------------------------------------------------------------
           elif cmd_tokens[1] == 'CAPTURE_VIDEO':
               if camera_status == 1:
                  camera_err_counter += 1
@@ -159,7 +169,7 @@ while True:
                  
               if cmd_tokens[3] == 'VFLIP_ON':
                  flip_var = 'VFLIP=TRUE'
-              elif cmd_tokens[3] == 'VFLIP_OFF':
+              elif cmd_tokens[3] == 'VFLIP_OF':
                  flip_var = 'VFLIP=FALSE'
               else:
                  camera_err_counter += 1
@@ -187,6 +197,81 @@ while True:
                  camera_status = 1
               else:
                  camera_err_counter += 1
+          # --------------------------------------------------------------------------------------
+          # Timelapse:
+          #   Parameters are:
+          #      SIZE_1 | SIZE_2 | SIZE_3 
+          #      VFLIP_ON | VFLIP_OF
+          #      integer delay in seconds between frames
+          #      integer number of frames to capture
+          #      filename prefix 
+          #
+          elif cmd_tokens[1] == 'CAPTURE_TIMELAPSE':
+              if camera_status == 1:
+                 camera_err_counter += 1
+                 print('Camera is busy!')
+                 continue
+
+              cmd_error = False
+              print('Received PICAM command - CAPTURE_TIMELAPSE')
+              if cmd_tokens[2] == 'SIZE_1':
+                 size_var = 'SIZE=1'
+              elif cmd_tokens[2] == 'SIZE_2':
+                 size_var = 'SIZE=2'
+              elif cmd_tokens[2] == 'SIZE_3':
+                 size_var = 'SIZE=3'
+              else:
+                 camera_err_counter += 1
+                 print('Invalid SIZE specified in CAPTURE_TIMELAPSE command')
+                 continue
+                 
+              if cmd_tokens[3] == 'VFLIP_ON':
+                 flip_var = 'VFLIP=TRUE'
+              elif cmd_tokens[3] == 'VFLIP_OF':
+                 flip_var = 'VFLIP=FALSE'
+              else:
+                 camera_err_counter += 1
+                 print('Invalid VFLIP specified in CAPTURE_TIMELAPSE command')
+                 continue
+       
+              # Delay 
+              delay_val = cmd_tokens[4].lstrip('0')
+              delay_val = cmd_tokens[4].lstrip(' ')
+
+              # Frames
+              num_frames = cmd_tokens[5].lstrip('0')
+              num_frames = cmd_tokens[5].lstrip(' ')
+
+              # timelaspse filename prefix
+              file_prefix = cmd_tokens[6]
+
+              #
+              # Send the CAPTURE_TIMELAPSE command
+              #
+              #   Parameters are:
+              #      SIZE ( 1, 2, or 3 ) 
+              #      VFLIP ( TRUE or FALSE )
+              #      FILE_PRE = ( filename prefix string )
+              #      DELAY = ( integer delay in seconds between frames )
+              #      FRAMES = ( integer number of frames to capture )
+              #
+              # SENSOR_REQ,
+              #             DEV=PI_CAMERA,SUB_DEV=TIMELAPSE,CMD=CAPTURE,SIZE=1,VFLIP=TRUE,FILE_PRE=timelapse-,
+              #             DELAY=10,FRAMES=10,
+              # SENSOR_REQ_END
+              #
+              sensor_cmd = 'SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=TIMELAPSE,CMD=CAPTURE,' + size_var + ',' \
+                           + flip_var + ',FILE_PRE=' + file_prefix + ',DELAY=' + delay_val + ',FRAMES=' + num_frames + ',SENSOR_REQ_END'
+              print ('sending: ' , sensor_cmd )
+              sens_srv_socket.send_string(sensor_cmd)
+              sensor_message = sens_srv_socket.recv()
+              sensor_msg_tokens = sensor_message.split(',')
+              if sensor_msg_tokens[3] == 'STATUS=OK':
+                 camera_cmd_counter += 1
+                 camera_status = 1
+              else:
+                 camera_err_counter += 1
+          # --------------------------------------------------------------------------------------
               
 
    except KeyboardInterrupt:
