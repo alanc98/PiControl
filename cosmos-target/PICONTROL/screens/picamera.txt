@@ -17,6 +17,7 @@ VERTICAL
     LABELVALUE PICONTROL PICAM_STATS_TLM CMD_ERR_COUNT 
     LABELVALUE PICONTROL PICAM_STATS_TLM PICAM_STATUS 
     LABELVALUE PICONTROL PICAM_STATS_TLM PICAM_SECONDS 
+    LABELVALUE PICONTROL PICAM_STATS_TLM PICAM_FRAMES 
   END
   SETTING BACKCOLOR 163 185 163
 
@@ -34,7 +35,7 @@ VERTICAL
            BUTTON 'Capture Large Image' 'cmd("PICONTROL", "PCAM_IMAGE", "SUBSYS_STRING" => "PCAM001,", "CMD_STRING" => "CAPTURE_IMAGE,", "SIZE_STRING" => "SIZE_3,", "FLIP_STRING" => "VFLIP_ON,", "FILE_NAME" => get_named_widget("IMG_FILENAME").text)' 
          END
       END
-   TABITEM VIDEO
+    TABITEM VIDEO
       VERTICALBOX
          SECTIONHEADER "Pi Camera Video Cmds"
 
@@ -49,6 +50,29 @@ VERTICAL
          BUTTON 'Capture Small Video' 'cmd("PICONTROL", "PCAM_VIDEO", "SUBSYS_STRING" => "PCAM001," , "CMD_STRING" => "CAPTURE_VIDEO," , "SIZE_STRING" => "SIZE_1," , "FLIP_STRING" => "VFLIP_ON," , "DURATION" => get_named_widget("VID_DURATION").text , "FILE_NAME" => get_named_widget("VID_FILENAME").text)' 
          BUTTON 'Capture Med Video' 'cmd("PICONTROL", "PCAM_VIDEO", "SUBSYS_STRING" => "PCAM001," , "CMD_STRING" => "CAPTURE_VIDEO," , "SIZE_STRING" => "SIZE_2," ,   "FLIP_STRING" => "VFLIP_ON," , "DURATION" => get_named_widget("VID_DURATION").text , "FILE_NAME" => get_named_widget("VID_FILENAME").text)' 
          BUTTON 'Capture Large Video' 'cmd("PICONTROL", "PCAM_VIDEO", "SUBSYS_STRING" => "PCAM001," , "CMD_STRING" => "CAPTURE_VIDEO," , "SIZE_STRING" => "SIZE_3," , "FLIP_STRING" => "VFLIP_ON," , "DURATION" => get_named_widget("VID_DURATION").text , "FILE_NAME" => get_named_widget("VID_FILENAME").text)' 
+      END
+    END
+    TABITEM TIMELAPSE 
+      VERTICALBOX
+         SECTIONHEADER "Pi Camera Timelapse Cmds"
+
+         HORIZONTALBOX
+            LABEL "Timelapse File Prefix: " 
+            NAMED_WIDGET TIMELAPSE_FILEPREFIX TEXTFIELD 40 "/home/pi/Pictures/Timelapse-"
+         END
+         HORIZONTAL
+            LABEL "Timelapse Frame Delay: " 
+            NAMED_WIDGET TIMELAPSE_DELAY TEXTFIELD 5 "0060,"
+         END
+         HORIZONTAL
+            LABEL "Timelapse Num Frames: " 
+            NAMED_WIDGET TIMELAPSE_FRAMES TEXTFIELD 5 "0100,"
+         END
+         BUTTON 'Start Small Timelapse' 'cmd("PICONTROL", "PCAM_TIMELAPSE", "SUBSYS_STRING" => "PCAM001," , "CMD_STRING" => "CAPTURE_TIMELAPSE," , "SIZE_STRING" => "SIZE_1," , "FLIP_STRING" => "VFLIP_ON," , "DELAY_STRING" => get_named_widget("TIMELAPSE_DELAY").text ,"FRAMES_STRING" => get_named_widget("TIMELAPSE_FRAMES").text ,"FILE_PREFIX" => get_named_widget("TIMELAPSE_FILEPREFIX").text)' 
+
+         BUTTON 'Start Med Timelapse' 'cmd("PICONTROL", "PCAM_TIMELAPSE", "SUBSYS_STRING" => "PCAM001," , "CMD_STRING" => "CAPTURE_TIMELAPSE," , "SIZE_STRING" => "SIZE_2," , "FLIP_STRING" => "VFLIP_ON," , "DELAY_STRING" => get_named_widget("TIMELAPSE_DELAY").text ,"FRAMES_STRING" => get_named_widget("TIMELAPSE_FRAMES").text ,"FILE_PREFIX" => get_named_widget("TIMELAPSE_FILEPREFIX").text)' 
+
+         BUTTON 'Start Large Timelapse' 'cmd("PICONTROL", "PCAM_TIMELAPSE", "SUBSYS_STRING" => "PCAM001," , "CMD_STRING" => "CAPTURE_TIMELAPSE," , "SIZE_STRING" => "SIZE_3," , "FLIP_STRING" => "VFLIP_ON," , "DELAY_STRING" => get_named_widget("TIMELAPSE_DELAY").text ,"FRAMES_STRING" => get_named_widget("TIMELAPSE_FRAMES").text ,"FILE_PREFIX" => get_named_widget("TIMELAPSE_FILEPREFIX").text)' 
       END
     END
   END

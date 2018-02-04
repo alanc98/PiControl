@@ -98,4 +98,5 @@ TELEMETRY PICONTROL PICAM_STATS_TLM LITTLE_ENDIAN "PiControl Pi Camera Telemetry
      STATE NOT_BUSY    0 GREEN 
      STATE BUSY        1 RED
   APPEND_ITEM PICAM_SECONDS  16 UINT "Camera Video Capture Seconds"
+  APPEND_ITEM PICAM_FRAMES   16 UINT "Camera Timelapse Frames Captured"
 
