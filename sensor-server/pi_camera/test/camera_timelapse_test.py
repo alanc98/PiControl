@@ -34,4 +34,14 @@ for i in range (10):
 status_message = sub_socket.recv()
 print("Received Pi_Camera status message:",status_message) 
 
+time.sleep(5)
 
+socket.send("SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=TIMELAPSE,CMD=CAPTURE,SIZE=2,VFLIP=FALSE,FILE_PRE=/home/pi/Desktop/timelapse2-,DELAY=1,FRAMES=10,SENSOR_REQ_END")
+message = socket.recv()
+print("Received Pi_Camera sensor reply:",message)
+
+for i in range (10):
+  status_message = sub_socket.recv()
+  print("Received Pi_Camera status message:",status_message) 
+status_message = sub_socket.recv()
+print("Received Pi_Camera status message:",status_message) 

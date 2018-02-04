@@ -16,7 +16,7 @@ def init_module():
 #
 # Capture a picture 
 #
-def capture_still(image_size, vflip, hflip, file):
+def capture_still(image_size, vflip, file):
    camera = PiCamera()
    
    if image_size == 1:
@@ -28,8 +28,6 @@ def capture_still(image_size, vflip, hflip, file):
 
    if vflip == True:
       camera.vflip = True
-
-   if hflip == True:
       camera.hflip = True
 
    camera.capture(file)
@@ -77,7 +75,7 @@ def process_still_req(message):
          Vflip = False
 
       # call Helper thread  
-      capture_still(ImageSize, Vflip, True, file_list[1])
+      capture_still(ImageSize, Vflip, file_list[1])
  
       message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=STILL,STATUS=OK,SENSOR_REP_END"
 
@@ -90,7 +88,7 @@ def process_still_req(message):
 #   If a new thread is spawned for the video it will have to keep a new request 
 #   from being processed, since the camera is busy 
 #
-def capture_video(image_size, vflip, hflip, file, duration):
+def capture_video(image_size, vflip, file, duration):
    global camera_busy 
    camera = PiCamera()
 
@@ -105,8 +103,6 @@ def capture_video(image_size, vflip, hflip, file, duration):
 
    if vflip == True:
       camera.vflip = True
-
-   if hflip == True:
       camera.hflip = True
 
    camera.start_recording(file)
@@ -166,7 +162,7 @@ def process_video_req(message):
       Duration = int(duration_list[1]) 
 
       # Create thread to capture the video
-      video_thread = threading.Thread(target=capture_video, args=(ImageSize, Vflip, True, file_list[1], Duration))
+      video_thread = threading.Thread(target=capture_video, args=(ImageSize, Vflip, file_list[1], Duration))
       video_thread.start()
       camera_busy = True 
 
@@ -180,23 +176,21 @@ def process_video_req(message):
 #   If a new thread is spawned for the timelapse it will have to keep a new request 
 #   from being processed, since the camera is busy 
 #
-def capture_timelapse(image_size, vflip, hflip, file_prefix, delay, frames):
+def capture_timelapse(image_size, vflip, file_prefix, delay, frames):
    global camera_busy 
    camera = PiCamera()
 
    print('capture_timelapse -- file prefix is', file_prefix)
    
    if image_size == 1:
-      camera.resolution = (640,480)
+      camera.resolution = (1024,768)
    elif image_size == 2:
-      camera.resolution = (1280,720)
-   else:
       camera.resolution = (1920,1080)
+   else:
+      camera.resolution = (2592,1944)
 
    if vflip == True:
       camera.vflip = True
-
-   if hflip == True:
       camera.hflip = True
 
    for i in range(frames):
@@ -270,7 +264,7 @@ def process_timelapse_req(message):
       Frames = int(frames_list[1])
 
       # Create thread to capture the video
-      video_thread = threading.Thread(target=capture_timelapse, args=(ImageSize, Vflip, True, file_prefix_list[1], Delay, Frames))
+      video_thread = threading.Thread(target=capture_timelapse, args=(ImageSize, Vflip, file_prefix_list[1], Delay, Frames))
       video_thread.start()
       camera_busy = True 
 
