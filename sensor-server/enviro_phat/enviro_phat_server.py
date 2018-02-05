@@ -123,7 +123,16 @@ def process_sensor_req(message):
 
    # This is where the right server function is called 
    if message_list[2] == 'SUB_DEV=BMP':
-      message = process_bmp_req(message)
+      if message_list[3] == 'CMD=READ':
+         message = process_bmp_req(message)
+      # Work in progress for subscriptions
+      elif message_list[3] == 'CMD=SUB_START':
+         message = process_bmp_sub_start(message)
+      elif message_list[3] == 'CMD=SUB_STOP':
+         message = process_bmp_sub_stop(message)
+      else:
+         # unknown Command
+         message = "SENSOR_REP," + message_list[1] + ",ERROR=UNKNOWN_CMD,SENSOR_REP_END"
    elif message_list[2] == 'SUB_DEV=LUX':
       message = process_light_req(message)
    elif message_list[2] == 'SUB_DEV=ACCEL':
@@ -151,21 +160,30 @@ socket.bind("tcp://*:5555")
 
 while True:
    try:
-      #  Wait for next request from client
-      message = socket.recv()
+      # Poll the socket for a message with a timeout
+      status = socket.poll(timeout=1000)
 
-      # Depending on the ID, pass it to the needed sensor function
-      message_list = message.split(',')   
-
-      # This is where the right server function is called 
-      if message_list[1] == 'DEV=ENVIRO_PHAT':
-         message = process_sensor_req(message)
+      # Work in progress for subscriptions
+      if status == 0:
+         print('Poll timeout - Process active subscriptions')
       else:
-         # unknown message
-         message = "SENSOR_REP," + message_list[1] + ",ERROR=UNKNOWN_ID,SENSOR_REP_END"
+         #  Wait for next request from client
+         print('no poll - Getting a message')
+         message = socket.recv()
 
-      #  Send reply back to client
-      socket.send(message)
+         # Depending on the ID, pass it to the needed sensor function
+         message_list = message.split(',')   
+
+         # This is where the right server function is called 
+         if message_list[1] == 'DEV=ENVIRO_PHAT':
+            message = process_sensor_req(message)
+         else:
+            # unknown message
+            message = "SENSOR_REP," + message_list[1] + ",ERROR=UNKNOWN_ID,SENSOR_REP_END"
+
+         #  Send reply back to client
+         socket.send(message)
+
    except KeyboardInterrupt:    
       sys.exit()
 
