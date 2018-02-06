@@ -12,15 +12,38 @@ from envirophat import light, weather, motion, analog, leds
 #
 def process_bmp_req(message):
 
-   # Get the values 
-   temp = round(weather.temperature(),2)
-   pressure = round(weather.pressure(),2)
-   altitude = round(weather.altitude(),2)
- 
-   # format the message
-   message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=BMP,TEMP=%.2f,PRES=%.2f,ALT=%.2f,SENSOR_REP_END" % (temp,pressure,altitude)
+   if message_list[3] == 'CMD=READ':
+      #
+      # Get the values 
+      #
+      temp = round(weather.temperature(),2)
+      pressure = round(weather.pressure(),2)
+      altitude = round(weather.altitude(),2)
 
+      #
+      # format the message
+      #
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=BMP,TEMP=%.2f,PRES=%.2f,ALT=%.2f,SENSOR_REP_END" % (temp,pressure,altitude)
+
+   elif message_list[3] == 'CMD=SUB_START':
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=BMP,CMD=SUB_START,RATE=1000,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=BMP,STATUS=OK|BUSY,SENSOR_REP_END
+      message =  "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=BMP,STATUS=OK,SENSOR_REP_END"
+
+   elif message_list[3] == 'CMD=SUB_STOP':
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=BMP,CMD=SUB_STOP,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=BMP,STATUS=OK,SENSOR_REP_END
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=BMP,STATUS=OK,SENSOR_REP_END"
+
+   else:
+      # unknown Command
+      message = "SENSOR_REP," + message_list[1] + ",SUB_DEV=BMP,ERROR=UNKNOWN_CMD,SENSOR_REP_END"
+
+   #
    #  Send reply back to client
+   #
    return message
 
 #
@@ -115,6 +138,12 @@ def process_led_req(message):
    return message
 
 #
+# High level sensor subscription processing function
+# 
+def process_sensor_subs(tick):
+    print ('Process Sensor Subscriptions. Tick = %d' % tick) 
+
+#
 # High level sensor request function
 #
 def process_sensor_req(message):
@@ -123,16 +152,7 @@ def process_sensor_req(message):
 
    # This is where the right server function is called 
    if message_list[2] == 'SUB_DEV=BMP':
-      if message_list[3] == 'CMD=READ':
-         message = process_bmp_req(message)
-      # Work in progress for subscriptions
-      elif message_list[3] == 'CMD=SUB_START':
-         message = process_bmp_sub_start(message)
-      elif message_list[3] == 'CMD=SUB_STOP':
-         message = process_bmp_sub_stop(message)
-      else:
-         # unknown Command
-         message = "SENSOR_REP," + message_list[1] + ",ERROR=UNKNOWN_CMD,SENSOR_REP_END"
+      message = process_bmp_req(message)
    elif message_list[2] == 'SUB_DEV=LUX':
       message = process_light_req(message)
    elif message_list[2] == 'SUB_DEV=ACCEL':
@@ -158,14 +178,16 @@ context = zmq.Context()
 socket = context.socket(zmq.REP)
 socket.bind("tcp://*:5555")
 
+tick = 0
+
 while True:
    try:
       # Poll the socket for a message with a timeout
       status = socket.poll(timeout=1000)
 
-      # Work in progress for subscriptions
       if status == 0:
-         print('Poll timeout - Process active subscriptions')
+         tick += 1
+         process_sensor_subs(tick) 
       else:
          #  Wait for next request from client
          print('no poll - Getting a message')
