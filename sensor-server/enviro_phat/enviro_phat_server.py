@@ -7,10 +7,26 @@ import time
 import zmq
 from envirophat import light, weather, motion, analog, leds
 
+global bmp_sub
+global bmp_sub_rate
+global bmp_sub_ticks
+ 
+def init_module():
+   global bmp_sub 
+   global bmp_sub_rate 
+   global bmp_sub_ticks 
+
+   bmp_sub = False   
+   bmp_sub_rate = 0
+   bmp_sub_ticks = 0
+
 #
 # BMP request function 
 #
 def process_bmp_req(message):
+   global bmp_sub 
+   global bmp_sub_rate 
+   global bmp_sub_ticks 
 
    if message_list[3] == 'CMD=READ':
       #
@@ -26,12 +42,25 @@ def process_bmp_req(message):
       message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=BMP,TEMP=%.2f,PRES=%.2f,ALT=%.2f,SENSOR_REP_END" % (temp,pressure,altitude)
 
    elif message_list[3] == 'CMD=SUB_START':
+      rate_message_list = message_list[4].split('=')
+      if rate_message_list[0] == 'RATE':
+         rate = int(rate_message_list[1])
+         if rate < 250:
+            bmp_sub_rate = 250 
+         else:
+            bmp_sub_rate = rate
+      bmp_sub_ticks = 0
+      bmp_sub = True
 
       # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=BMP,CMD=SUB_START,RATE=1000,SENSOR_REQ_END
       # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=BMP,STATUS=OK|BUSY,SENSOR_REP_END
       message =  "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=BMP,STATUS=OK,SENSOR_REP_END"
 
    elif message_list[3] == 'CMD=SUB_STOP':
+ 
+      bmp_sub = False
+      bmp_sub_rate = 0
+      bmp_sub_ticks = 0
 
       # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=BMP,CMD=SUB_STOP,SENSOR_REQ_END
       # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=BMP,STATUS=OK,SENSOR_REP_END
@@ -141,7 +170,15 @@ def process_led_req(message):
 # High level sensor subscription processing function
 # 
 def process_sensor_subs(tick):
-    print ('Process Sensor Subscriptions. Tick = %d' % tick) 
+   global bmp_sub 
+   global bmp_sub_rate 
+   global bmp_sub_ticks 
+
+   if bmp_sub == True:
+      bmp_sub_ticks += 250
+      if bmp_sub_ticks >= bmp_sub_rate:
+         print("process BMP sub")
+         bmp_sub_ticks = 0
 
 #
 # High level sensor request function
@@ -172,6 +209,11 @@ def process_sensor_req(message):
    return message
 
 #
+# Init globals
+# 
+init_module()
+
+#
 # Setup ZMQ socket
 #
 context = zmq.Context()
@@ -183,11 +225,14 @@ tick = 0
 while True:
    try:
       # Poll the socket for a message with a timeout
-      status = socket.poll(timeout=1000)
+      status = socket.poll(timeout=250)
 
       if status == 0:
          tick += 1
+         if tick == 5:
+            tick = 0
          process_sensor_subs(tick) 
+            
       else:
          #  Wait for next request from client
          print('no poll - Getting a message')
