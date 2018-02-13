@@ -2,6 +2,8 @@
 # ZMQ REP Server for the Pimoroni Enviro PHAT for the Raspberry Pi
 # Binds REP socket to tcp://*:5555
 #
+# Todo: Refactor using classes and actual object oriented code.
+#
 import sys
 import time
 import zmq
@@ -177,7 +179,18 @@ def process_sensor_subs(tick):
    if bmp_sub == True:
       bmp_sub_ticks += 250
       if bmp_sub_ticks >= bmp_sub_rate:
-         print("process BMP sub")
+         #
+         # Get the values 
+         #
+         temp = round(weather.temperature(),2)
+         pressure = round(weather.pressure(),2)
+         altitude = round(weather.altitude(),2)
+
+         #
+         # format the message
+         #
+         message = "SENSOR_PUB,DEV=ENVIRO_PHAT,SUB_DEV=BMP,TEMP=%.2f,PRES=%.2f,ALT=%.2f,SENSOR_PUB_END" % (temp,pressure,altitude)
+         pub_socket.send_string(message)
          bmp_sub_ticks = 0
 
 #
@@ -214,11 +227,17 @@ def process_sensor_req(message):
 init_module()
 
 #
-# Setup ZMQ socket
+# Setup ZMQ sockets
 #
 context = zmq.Context()
 socket = context.socket(zmq.REP)
 socket.bind("tcp://*:5555")
+
+#
+# Socket for PUB status messages
+#
+pub_socket = context.socket(zmq.PUB)
+pub_socket.bind('tcp://*:5559')
 
 tick = 0
 
@@ -235,7 +254,6 @@ while True:
             
       else:
          #  Wait for next request from client
-         print('no poll - Getting a message')
          message = socket.recv()
 
          # Depending on the ID, pass it to the needed sensor function
