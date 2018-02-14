@@ -12,15 +12,24 @@ from envirophat import light, weather, motion, analog, leds
 global bmp_sub
 global bmp_sub_rate
 global bmp_sub_ticks
+global lux_sub 
+global lux_sub_rate 
+global lux_sub_ticks 
  
 def init_module():
    global bmp_sub 
    global bmp_sub_rate 
    global bmp_sub_ticks 
+   global lux_sub 
+   global lux_sub_rate 
+   global lux_sub_ticks 
 
    bmp_sub = False   
    bmp_sub_rate = 0
    bmp_sub_ticks = 0
+   lux_sub = False   
+   lux_sub_rate = 0
+   lux_sub_ticks = 0
 
 #
 # BMP request function 
@@ -81,14 +90,46 @@ def process_bmp_req(message):
 # Light request function 
 #
 def process_light_req(message):
+   global lux_sub 
+   global lux_sub_rate 
+   global lux_sub_ticks 
 
-   # Get the values 
-   s_red, s_green, s_blue = light.rgb()
-   s_lux = light.light()
+   if message_list[3] == 'CMD=READ':
+      # Get the values 
+      s_red, s_green, s_blue = light.rgb()
+      s_lux = light.light()
  
-   # format the message
-   message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=LUX,RED=%.2f,GREEN=%.2f,BLUE=%.2f,LUX=%.2f,SENSOR_REP_END" % (s_red,s_green,s_blue, s_lux)
+      # format the message
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=LUX,RED=%.2f,GREEN=%.2f,BLUE=%.2f,LUX=%.2f,SENSOR_REP_END" % (s_red,s_green,s_blue, s_lux)
 
+   elif message_list[3] == 'CMD=SUB_START':
+      rate_message_list = message_list[4].split('=')
+      if rate_message_list[0] == 'RATE':
+         rate = int(rate_message_list[1])
+         if rate < 250:
+            lux_sub_rate = 250 
+         else:
+            lux_sub_rate = rate
+      lux_sub_ticks = 0
+      lux_sub = True
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=LUX,CMD=SUB_START,RATE=1000,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=LUX,STATUS=OK|BUSY,SENSOR_REP_END
+      message =  "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=LUX,STATUS=OK,SENSOR_REP_END"
+
+   elif message_list[3] == 'CMD=SUB_STOP':
+ 
+      lux_sub = False
+      lux_sub_rate = 0
+      lux_sub_ticks = 0
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=LUX,CMD=SUB_STOP,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=LUX,STATUS=OK,SENSOR_REP_END
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=LUX,STATUS=OK,SENSOR_REP_END"
+
+   else:
+      # unknown Command
+      message = "SENSOR_REP," + message_list[1] + ",SUB_DEV=LUX,ERROR=UNKNOWN_CMD,SENSOR_REP_END"
    #  Send reply back to client
    return message
 
@@ -175,6 +216,9 @@ def process_sensor_subs(tick):
    global bmp_sub 
    global bmp_sub_rate 
    global bmp_sub_ticks 
+   global lux_sub 
+   global lux_sub_rate 
+   global lux_sub_ticks 
 
    if bmp_sub == True:
       bmp_sub_ticks += 250
@@ -186,12 +230,27 @@ def process_sensor_subs(tick):
          pressure = round(weather.pressure(),2)
          altitude = round(weather.altitude(),2)
 
+         time_string = time.time()
          #
          # format the message
          #
-         message = "SENSOR_PUB,DEV=ENVIRO_PHAT,SUB_DEV=BMP,TEMP=%.2f,PRES=%.2f,ALT=%.2f,SENSOR_PUB_END" % (temp,pressure,altitude)
+         message = "SENSOR_PUB,DEV=ENVIRO_PHAT,SUB_DEV=BMP,TIME=%s,TEMP=%.2f,PRES=%.2f,ALT=%.2f,SENSOR_PUB_END" % (time_string,temp,pressure,altitude)
          pub_socket.send_string(message)
          bmp_sub_ticks = 0
+   if lux_sub == True:
+      lux_sub_ticks += 250
+      if lux_sub_ticks >= lux_sub_rate:
+         #
+         # Get the values 
+         #
+         s_red, s_green, s_blue = light.rgb()
+         s_lux = light.light()
+         time_string = time.time()
+ 
+         # format the message
+         message = "SENSOR_PUB,DEV=ENVIRO_PHAT,SUB_DEV=LUX,TIME=%s,RED=%.2f,GREEN=%.2f,BLUE=%.2f,LUX=%.2f,SENSOR_PUB_END" % (time_string,s_red,s_green,s_blue, s_lux)
+         pub_socket.send_string(message)
+         lux_sub_ticks = 0
 
 #
 # High level sensor request function
