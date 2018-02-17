@@ -15,6 +15,18 @@ global bmp_sub_ticks
 global lux_sub 
 global lux_sub_rate 
 global lux_sub_ticks 
+global accel_sub 
+global accel_sub_rate 
+global accel_sub_ticks 
+global heading_sub 
+global heading_sub_rate 
+global heading_sub_ticks 
+global mag_sub 
+global mag_sub_rate 
+global mag_sub_ticks 
+global analog_sub 
+global analog_sub_rate 
+global analog_sub_ticks 
  
 def init_module():
    global bmp_sub 
@@ -23,6 +35,18 @@ def init_module():
    global lux_sub 
    global lux_sub_rate 
    global lux_sub_ticks 
+   global accel_sub 
+   global accel_sub_rate 
+   global accel_sub_ticks 
+   global heading_sub 
+   global heading_sub_rate 
+   global heading_sub_ticks 
+   global mag_sub 
+   global mag_sub_rate 
+   global mag_sub_ticks 
+   global analog_sub 
+   global analog_sub_rate 
+   global analog_sub_ticks 
 
    bmp_sub = False   
    bmp_sub_rate = 0
@@ -30,6 +54,18 @@ def init_module():
    lux_sub = False   
    lux_sub_rate = 0
    lux_sub_ticks = 0
+   accel_sub = 0
+   accel_sub_rate = 0
+   accel_sub_ticks = 0
+   heading_sub = 0
+   heading_sub_rate = 0
+   heading_sub_ticks = 0
+   mag_sub = 0
+   mag_sub_rate = 0
+   mag_sub_ticks = 0
+   analog_sub = 0
+   analog_sub_rate = 0
+   analog_sub_ticks = 0
 
 #
 # BMP request function 
@@ -137,57 +173,182 @@ def process_light_req(message):
 # Accel request function 
 #
 def process_accel_req(message):
+   global accel_sub
+   global accel_sub_rate
+   global accel_sub_ticks
 
-   # Get the values 
-   s_x, s_y, s_z = motion.accelerometer()
+   if message_list[3] == 'CMD=READ':
+      # Get the values 
+      s_x, s_y, s_z = motion.accelerometer()
  
-   # format the message
-   message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ACCEL,X=%.2f,Y=%.2f,Z=%.2f,SENSOR_REP_END" % (s_x,s_y,s_z)
+      # format the message
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ACCEL,X=%.2f,Y=%.2f,Z=%.2f,SENSOR_REP_END" % (s_x,s_y,s_z)
 
+   elif message_list[3] == 'CMD=SUB_START':
+      rate_message_list = message_list[4].split('=')
+      if rate_message_list[0] == 'RATE':
+         rate = int(rate_message_list[1])
+         if rate < 250:
+            accel_sub_rate = 250 
+         else:
+            accel_sub_rate = rate
+      accel_sub_ticks = 0
+      accel_sub = True
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=ACCEL,CMD=SUB_START,RATE=1000,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ACCEL,STATUS=OK|BUSY,SENSOR_REP_END
+      message =  "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ACCEL,STATUS=OK,SENSOR_REP_END"
+
+   elif message_list[3] == 'CMD=SUB_STOP':
+ 
+      accel_sub = False
+      accel_sub_rate = 0
+      accel_sub_ticks = 0
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=ACCEL,CMD=SUB_STOP,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ACCEL,STATUS=OK,SENSOR_REP_END
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ACCEL,STATUS=OK,SENSOR_REP_END"
+
+   else:
+      # unknown Command
+      message = "SENSOR_REP," + message_list[1] + ",SUB_DEV=ACCEL,ERROR=UNKNOWN_CMD,SENSOR_REP_END"
    #  Send reply back to client
    return message
-
 
 #
 # Heading request function 
 #
 def process_heading_req(message):
+   global heading_sub 
+   global heading_sub_rate 
+   global heading_sub_ticks 
 
-   # Get the values 
-   s_heading = motion.heading()
+   if message_list[3] == 'CMD=READ':
+      # Get the values 
+      s_heading = motion.heading()
+      # format the message
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=HEADING,HEADING=%.2f,SENSOR_REP_END" % (s_heading)
+
+   elif message_list[3] == 'CMD=SUB_START':
+      rate_message_list = message_list[4].split('=')
+      if rate_message_list[0] == 'RATE':
+         rate = int(rate_message_list[1])
+         if rate < 250:
+            heading_sub_rate = 250 
+         else:
+            heading_sub_rate = rate
+      heading_sub_ticks = 0
+      heading_sub = True
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=HEADING,CMD=SUB_START,RATE=1000,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=HEADING,STATUS=OK|BUSY,SENSOR_REP_END
+      message =  "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=HEADING,STATUS=OK,SENSOR_REP_END"
+
+   elif message_list[3] == 'CMD=SUB_STOP':
  
-   # format the message
-   message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=HEADING,HEADING=%.2f,SENSOR_REP_END" % (s_heading)
+      heading_sub = False
+      heading_sub_rate = 0
+      heading_sub_ticks = 0
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=HEADING,CMD=SUB_STOP,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=HEADING,STATUS=OK,SENSOR_REP_END
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=HEADING,STATUS=OK,SENSOR_REP_END"
+
+   else:
+      # unknown Command
+      message = "SENSOR_REP," + message_list[1] + ",SUB_DEV=HEADING,ERROR=UNKNOWN_CMD,SENSOR_REP_END"
 
    #  Send reply back to client
    return message
-
 
 #
 # Mag values request function 
 #
 def process_mag_req(message):
+   global mag_sub 
+   global mag_sub_rate 
+   global mag_sub_ticks 
 
-   # Get the values 
-   s_x, s_y, s_z = motion.magnetometer()
+   if message_list[3] == 'CMD=READ':
+      # Get the values 
+      s_x, s_y, s_z = motion.magnetometer()
  
-   # format the message
-   message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=MAG,X=%.2f,Y=%.2f,Z=%.2f,SENSOR_REP_END" % (s_x,s_y,s_z)
+      # format the message
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=MAG,X=%.2f,Y=%.2f,Z=%.2f,SENSOR_REP_END" % (s_x,s_y,s_z)
+
+   elif message_list[3] == 'CMD=SUB_START':
+      rate_message_list = message_list[4].split('=')
+      if rate_message_list[0] == 'RATE':
+         rate = int(rate_message_list[1])
+         if rate < 250:
+            mag_sub_rate = 250 
+         else:
+            mag_sub_rate = rate
+      mag_sub_ticks = 0
+      mag_sub = True
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=MAG,CMD=SUB_START,RATE=1000,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=MAG,STATUS=OK|BUSY,SENSOR_REP_END
+      message =  "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=MAG,STATUS=OK,SENSOR_REP_END"
+
+   elif message_list[3] == 'CMD=SUB_STOP':
+      mag_sub = False
+      mag_sub_rate = 0
+      mag_sub_ticks = 0
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=MAG,CMD=SUB_STOP,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=MAG,STATUS=OK,SENSOR_REP_END
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=MAG,STATUS=OK,SENSOR_REP_END"
+
+   else:
+      # unknown Command
+      message = "SENSOR_REP," + message_list[1] + ",SUB_DEV=MAG,ERROR=UNKNOWN_CMD,SENSOR_REP_END"
 
    #  Send reply back to client
    return message
-
 
 #
 # Analog input request function 
 #
 def process_analog_req(message):
+   global analog_sub 
+   global analog_sub_rate 
+   global analog_sub_ticks 
 
-   # Get the values 
-   s_a1, s_a2, s_a3, s_a4 = analog.read_all()
+   if message_list[3] == 'CMD=READ':
+      # Get the values 
+      s_a1, s_a2, s_a3, s_a4 = analog.read_all()
  
-   # format the message
-   message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ANALOG,A1=%.2f,A2=%.2f,A3=%.2f,A4=%.2f,SENSOR_REP_END" % (s_a1,s_a2,s_a3,s_a4)
+      # format the message
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ANALOG,A1=%.2f,A2=%.2f,A3=%.2f,A4=%.2f,SENSOR_REP_END" % (s_a1,s_a2,s_a3,s_a4)
+
+   elif message_list[3] == 'CMD=SUB_START':
+      rate_message_list = message_list[4].split('=')
+      if rate_message_list[0] == 'RATE':
+         rate = int(rate_message_list[1])
+         if rate < 250:
+            analog_sub_rate = 250 
+         else:
+            analog_sub_rate = rate
+      analog_sub_ticks = 0
+      analog_sub = True
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=ANALOG,CMD=SUB_START,RATE=1000,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ANALOG,STATUS=OK|BUSY,SENSOR_REP_END
+      message =  "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ANALOG,STATUS=OK,SENSOR_REP_END"
+
+   elif message_list[3] == 'CMD=SUB_STOP':
+      analog_sub = False
+      analog_sub_rate = 0
+      analog_sub_ticks = 0
+
+      # SENSOR_REQ,DEV=ENVIRO_PHAT,SUB_DEV=ANALOG,CMD=SUB_STOP,SENSOR_REQ_END
+      # SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ANALOG,STATUS=OK,SENSOR_REP_END
+      message = "SENSOR_REP,DEV=ENVIRO_PHAT,SUB_DEV=ANALOG,STATUS=OK,SENSOR_REP_END"
+
+   else:
+      # unknown Command
+      message = "SENSOR_REP," + message_list[1] + ",SUB_DEV=ANALOG,ERROR=UNKNOWN_CMD,SENSOR_REP_END"
 
    #  Send reply back to client
    return message
@@ -219,6 +380,18 @@ def process_sensor_subs(tick):
    global lux_sub 
    global lux_sub_rate 
    global lux_sub_ticks 
+   global accel_sub 
+   global accel_sub_rate 
+   global accel_sub_ticks 
+   global heading_sub 
+   global heading_sub_rate 
+   global heading_sub_ticks 
+   global mag_sub 
+   global mag_sub_rate 
+   global mag_sub_ticks 
+   global analog_sub 
+   global analog_sub_rate 
+   global analog_sub_ticks 
 
    if bmp_sub == True:
       bmp_sub_ticks += 250
@@ -251,6 +424,57 @@ def process_sensor_subs(tick):
          message = "SENSOR_PUB,DEV=ENVIRO_PHAT,SUB_DEV=LUX,TIME=%s,RED=%.2f,GREEN=%.2f,BLUE=%.2f,LUX=%.2f,SENSOR_PUB_END" % (time_string,s_red,s_green,s_blue, s_lux)
          pub_socket.send_string(message)
          lux_sub_ticks = 0
+   if accel_sub == True:
+      accel_sub_ticks += 250
+      if accel_sub_ticks >= accel_sub_rate:
+         #
+         # Get the values 
+         #
+         s_x, s_y, s_z = motion.accelerometer()
+         time_string = time.time()
+ 
+         # format the message
+         message = "SENSOR_PUB,DEV=ENVIRO_PHAT,SUB_DEV=ACCEL,TIME=%s,X=%.2f,Y=%.2f,Z=%.2f,SENSOR_PUB_END" % (time_string,s_x,s_y,s_z)
+         pub_socket.send_string(message)
+         accel_sub_ticks = 0
+   if heading_sub == True:
+      heading_sub_ticks += 250
+      if heading_sub_ticks >= heading_sub_rate:
+         #
+         # Get the values 
+         #
+         s_heading = motion.heading()
+         time_string = time.time()
+         # format the message
+         message = "SENSOR_PUB,DEV=ENVIRO_PHAT,SUB_DEV=HEADING,TIME=%s,HEADING=%.2f,SENSOR_PUB_END" % (time_string,s_heading)
+         pub_socket.send_string(message)
+         heading_sub_ticks = 0
+   if mag_sub == True:
+      mag_sub_ticks += 250
+      if mag_sub_ticks >= mag_sub_rate:
+         #
+         # Get the values 
+         #
+         s_x, s_y, s_z = motion.magnetometer()
+         time_string = time.time()
+ 
+         # format the message
+         message = "SENSOR_PUB,DEV=ENVIRO_PHAT,SUB_DEV=MAG,TIME=%s,X=%.2f,Y=%.2f,Z=%.2f,SENSOR_PUB_END" % (time_string,s_x,s_y,s_z)
+         pub_socket.send_string(message)
+         mag_sub_ticks = 0
+   if analog_sub == True:
+      analog_sub_ticks += 250
+      if analog_sub_ticks >= analog_sub_rate:
+         #
+         # Get the values 
+         #
+         s_a1, s_a2, s_a3, s_a4 = analog.read_all()
+         time_string = time.time()
+ 
+         # format the message
+         message = "SENSOR_PUB,DEV=ENVIRO_PHAT,SUB_DEV=ANALOG,TIME=%s,A1=%.2f,A2=%.2f,A3=%.2f,A4=%.2f,SENSOR_PUB_END" % (time_string,s_a1,s_a2,s_a3,s_a4)
+         pub_socket.send_string(message)
+         analog_sub_ticks = 0
 
 #
 # High level sensor request function
