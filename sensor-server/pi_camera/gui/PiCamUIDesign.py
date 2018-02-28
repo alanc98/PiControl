@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'PiCamUIDesign.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Wed Feb 28 13:12:16 2018
+#      by: PyQt4 UI code generator 4.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -75,11 +76,8 @@ class Ui_MainWindow(object):
         self.videoPushButton.setGeometry(QtCore.QRect(320, 200, 121, 27))
         self.videoPushButton.setObjectName(_fromUtf8("videoPushButton"))
         self.label_7 = QtGui.QLabel(self.VideoTab)
-        self.label_7.setGeometry(QtCore.QRect(10, 200, 181, 17))
+        self.label_7.setGeometry(QtCore.QRect(10, 190, 181, 17))
         self.label_7.setObjectName(_fromUtf8("label_7"))
-        self.videoLcdNumber = QtGui.QLCDNumber(self.VideoTab)
-        self.videoLcdNumber.setGeometry(QtCore.QRect(200, 200, 71, 23))
-        self.videoLcdNumber.setObjectName(_fromUtf8("videoLcdNumber"))
         self.label_10 = QtGui.QLabel(self.VideoTab)
         self.label_10.setGeometry(QtCore.QRect(10, 120, 191, 17))
         self.label_10.setObjectName(_fromUtf8("label_10"))
@@ -89,6 +87,11 @@ class Ui_MainWindow(object):
         self.videoLengthSpinBox.setMaximum(10000)
         self.videoLengthSpinBox.setProperty("value", 10)
         self.videoLengthSpinBox.setObjectName(_fromUtf8("videoLengthSpinBox"))
+        self.videoSecondsLineEdit = QtGui.QLineEdit(self.VideoTab)
+        self.videoSecondsLineEdit.setGeometry(QtCore.QRect(190, 190, 91, 33))
+        self.videoSecondsLineEdit.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.videoSecondsLineEdit.setReadOnly(True)
+        self.videoSecondsLineEdit.setObjectName(_fromUtf8("videoSecondsLineEdit"))
         self.tabWidget.addTab(self.VideoTab, _fromUtf8(""))
         self.TimelapseTab = QtGui.QWidget()
         self.TimelapseTab.setObjectName(_fromUtf8("TimelapseTab"))
@@ -125,14 +128,16 @@ class Ui_MainWindow(object):
         self.timelapseDelaySpinBox.setProperty("value", 60)
         self.timelapseDelaySpinBox.setObjectName(_fromUtf8("timelapseDelaySpinBox"))
         self.label_13 = QtGui.QLabel(self.TimelapseTab)
-        self.label_13.setGeometry(QtCore.QRect(20, 210, 121, 17))
+        self.label_13.setGeometry(QtCore.QRect(10, 200, 121, 17))
         self.label_13.setObjectName(_fromUtf8("label_13"))
-        self.timelapseLcdNumber = QtGui.QLCDNumber(self.TimelapseTab)
-        self.timelapseLcdNumber.setGeometry(QtCore.QRect(150, 210, 91, 23))
-        self.timelapseLcdNumber.setObjectName(_fromUtf8("timelapseLcdNumber"))
         self.timelapsePushButton = QtGui.QPushButton(self.TimelapseTab)
         self.timelapsePushButton.setGeometry(QtCore.QRect(300, 210, 151, 27))
         self.timelapsePushButton.setObjectName(_fromUtf8("timelapsePushButton"))
+        self.timelapseFramesLineEdit = QtGui.QLineEdit(self.TimelapseTab)
+        self.timelapseFramesLineEdit.setGeometry(QtCore.QRect(140, 200, 101, 33))
+        self.timelapseFramesLineEdit.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.timelapseFramesLineEdit.setReadOnly(True)
+        self.timelapseFramesLineEdit.setObjectName(_fromUtf8("timelapseFramesLineEdit"))
         self.tabWidget.addTab(self.TimelapseTab, _fromUtf8(""))
         self.label = QtGui.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(20, 350, 141, 16))

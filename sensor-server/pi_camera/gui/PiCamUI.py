@@ -1,12 +1,32 @@
 #
 # sensor server picam module GUI
 #
-from PyQt4 import QtGui 
+from PyQt4 import QtGui
+from PyQt4.QtCore import QThread, SIGNAL
 import sys 
+import time 
 import zmq
 
 import PiCamUIDesign 
-              
+             
+class PiCamUIThread(QThread):
+   
+   def __init__(self):
+      QThread.__init__(self)
+
+   def __del__(self):
+      print 'UI Thread ending'
+      self.wait()
+
+   def run(self):
+      counter = 1
+      while True:
+         print 'UI Thread running'
+         self.emit(SIGNAL('update_video_counter(QString)'),str(counter)) 
+         counter += 1
+         time.sleep(2)
+
+ 
 class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
    def __init__(self):
       super(self.__class__, self).__init__()
@@ -35,6 +55,8 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
 
       # Pre-populate Camera Status
       self.cameraStatusLineEdit.setText("IDLE")
+      self.videoSecondsLineEdit.setText("0")
+      self.timelapseFramesLineEdit.setText("0")
 
       # Connect buttons
       self.imagePushButton.clicked.connect(self.send_capture_image_message) 
@@ -47,6 +69,14 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
       self.context = zmq.Context()
       self.req_socket = self.context.socket(zmq.REQ)
       self.req_socket_connected = False
+
+      # Create the helper thread
+      self.uiThread = PiCamUIThread()
+      self.connect(self.uiThread, SIGNAL("update_video_counter(QString)"),self.update_video_counter)
+      self.uiThread.start()
+
+   def update_video_counter(self,counter_text):
+      self.videoSecondsLineEdit.setText(counter_text)
 
    def send_camera_sensor_req(self, req_message):
       print req_message
