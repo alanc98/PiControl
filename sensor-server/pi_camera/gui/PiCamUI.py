@@ -24,9 +24,9 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
       self.timelapseSizeComboBox.addItem("2592x1944")
 
       # Pre-populate the Filename/Path text boxes
-      self.imagePathLineEdit.setText("/home/Pi/Pictures/picam_image001.jpg")
-      self.videoPathLineEdit.setText("/home/Pi/Pictures/picam_video001.h264")
-      self.timelapsePathLineEdit.setText("/home/Pi/Pictures/timelapse-01-")
+      self.imagePathLineEdit.setText("/home/pi/Pictures/picam_image001.jpg")
+      self.videoPathLineEdit.setText("/home/pi/Pictures/picam_video001.h264")
+      self.timelapsePathLineEdit.setText("/home/pi/Pictures/timelapse-01-")
 
       # Pre-populate IP address and ports
       self.ipAddressLineEdit.setText("127.0.0.1")
@@ -48,23 +48,24 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
       self.req_socket = self.context.socket(zmq.REQ)
       self.req_socket_connected = False
 
-   def send_camera_sensor_req(self, req_message, ip_addr):
-       print 'Sending Message to Address:' + ip_addr
-       print req_message
-       ip_string = 'tcp://' + ip_addr + ':5557'
-       if self.req_socket_connected == False:
-           self.req_socket.connect(str(ip_string))
-       self.req_socket.send(str(req_message))
-       reply_message = self.req_socket.recv()
-       print 'Received Pi_Camera sensor reply:' , reply_message
+   def send_camera_sensor_req(self, req_message):
+      print req_message
+      if self.req_socket_connected == True:
+         self.req_socket.send(str(req_message))
+         reply_message = self.req_socket.recv()
+         print 'Received Pi_Camera sensor reply:' , reply_message
+      else:
+         print 'Socket not connected'
 
    def connect_to_ports(self):
-       if self.connected == False:
-          print 'connecting to the ZMQ remote ports!'
-          self.connected = True
-          self.connectedCheckBox.setChecked(True)
-       else:
-           print 'already connected to the ports!'
+      if self.req_socket_connected == False:
+         ip_addr = self.ipAddressLineEdit.text()
+         ip_string = 'tcp://' + ip_addr + ':5557'
+         self.req_socket.connect(str(ip_string))
+         self.req_socket_connected = True
+         self.connectedCheckBox.setChecked(True)
+      else:
+         self.connectedCheckBox.setChecked(True)
 
    def send_capture_image_message(self):
       image_size_text = self.imageSizeComboBox.currentText()
@@ -80,8 +81,7 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
       else:
           flip_text = 'FALSE'
       sensor_req_message = 'SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=STILL,CMD=CAPTURE,SIZE=' + message_size_text + ',VFLIP=' + flip_text + ',FILE=' + image_file_name + ',SENSOR_REQ_END'
-      ip_address = self.ipAddressLineEdit.text()
-      self.send_camera_sensor_req(sensor_req_message, ip_address)
+      self.send_camera_sensor_req(sensor_req_message)
 
    def send_capture_video_message(self):
       video_size_text = self.videoSizeComboBox.currentText()
@@ -100,8 +100,7 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
       duration_text = str(video_seconds)
 
       sensor_req_message = 'SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=VIDEO,CMD=CAPTURE,SIZE=' + size_text + ',VFLIP=' + flip_text + ',DURATION=' + duration_text + ',FILE=' + video_file_name + ',SENSOR_REQ_END'
-      ip_address = self.ipAddressLineEdit.text()
-      self.send_camera_sensor_req(sensor_req_message, ip_address)
+      self.send_camera_sensor_req(sensor_req_message)
 
  
    def send_capture_timelapse_message(self):
@@ -120,8 +119,7 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
       num_frames_text = str(self.timelapseFramesSpinBox.value())
       frame_delay_text = str(self.timelapseDelaySpinBox.value())
       sensor_req_message = 'SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=TIMELAPSE,CMD=CAPTURE,SIZE=' + message_size_text + ',VFLIP=' + flip_text + ',FILE_PRE=' + image_file_prefix + ',DELAY=' + frame_delay_text + ',FRAMES=' + num_frames_text + ',SENSOR_REQ_END'
-      ip_address = self.ipAddressLineEdit.text()
-      self.send_camera_sensor_req(sensor_req_message, ip_address)
+      self.send_camera_sensor_req(sensor_req_message)
 
 
 def main():

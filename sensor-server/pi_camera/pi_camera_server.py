@@ -30,9 +30,9 @@ def capture_still(image_size, vflip, file):
       camera.vflip = True
       camera.hflip = True
 
-   camera.capture(file)
-  
-   camera.close()
+   try:
+      camera.capture(file)
+      camera.close()
  
    return 
    
