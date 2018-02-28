@@ -33,8 +33,9 @@ def capture_still(image_size, vflip, file):
    try:
       camera.capture(file)
       camera.close()
- 
-   return 
+      return True 
+   except: 
+      return False 
    
 #
 # STILL request function 
@@ -75,9 +76,12 @@ def process_still_req(message):
          Vflip = False
 
       # call Helper thread  
-      capture_still(ImageSize, Vflip, file_list[1])
- 
-      message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=STILL,STATUS=OK,SENSOR_REP_END"
+      cam_result = capture_still(ImageSize, Vflip, file_list[1])
+
+      if cam_result == True: 
+         message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=STILL,STATUS=OK,SENSOR_REP_END"
+      else:
+         message = "SENSOR_REP,DEV=PI_CAMERA,SUB_DEV=STILL,STATUS=ERROR,SENSOR_REP_END"
 
       return message
 
