@@ -35,6 +35,7 @@ def capture_still(image_size, vflip, file):
       camera.close()
       return True 
    except: 
+      camera.close()
       return False 
    
 #
