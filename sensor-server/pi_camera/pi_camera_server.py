@@ -112,9 +112,9 @@ def capture_video(image_size, vflip, file, duration):
 
    camera.start_recording(file)
    for i in range (duration):
-      camera.wait_recording(1)
       video_status_string = 'SENSOR_PUB,DEV=PI_CAMERA,VIDEO_SECOND=' + str(i) + ',SENSOR_PUB_END'
       pub_socket.send_string(video_status_string)
+      camera.wait_recording(1)
    video_status_string = 'SENSOR_PUB,DEV=PI_CAMERA,VIDEO_DONE,SENSOR_PUB_END'
    pub_socket.send_string(video_status_string)
 
@@ -202,9 +202,9 @@ def capture_timelapse(image_size, vflip, file_prefix, delay, frames):
       filename = file_prefix + '%04d.jpg' % i
       print('Capturing file %s' % filename)
       camera.capture(filename)
-      time.sleep(delay)
       timelapse_status_string = 'SENSOR_PUB,DEV=PI_CAMERA,TIMELAPSE_FRAME=' + str(i) + ',SENSOR_PUB_END'
       pub_socket.send_string(timelapse_status_string)
+      time.sleep(delay)
  
    timelapse_status_string = 'SENSOR_PUB,DEV=PI_CAMERA,TIMELAPSE_DONE,SENSOR_PUB_END'
    pub_socket.send_string(timelapse_status_string)
