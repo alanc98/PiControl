@@ -1,16 +1,32 @@
 #
 # sensor server picam module GUI
 #
-from PyQt4 import QtGui
-from PyQt4.QtCore import QThread, SIGNAL
+from   PyQt4 import QtGui
+from   PyQt4.QtCore import QThread, SIGNAL
 import sys 
 import time 
 import zmq
 
 import PiCamUIDesign 
-             
+
+#
+# Globals for this module
+#  The globals are needed between the GUI class and the Thread that receives
+#  ZeroMQ sub packets
+#  The GUI class connects to the socket because the user can set the IP address
+#  The Thread needs access to the socket to receive the sub packets.
+# 
+#  Maybe a better approach would be to use a signal from the GUI class to the 
+#  thread class to set the IP address.
+# 
+global __sub_socket__
+global __sub_socket_connected__
+
+#
+# The PiCamUI Thread to receive Zero MQ Sub/Pub packets
+#
 class PiCamUIThread(QThread):
-   
+
    def __init__(self):
       QThread.__init__(self)
 
@@ -19,16 +35,29 @@ class PiCamUIThread(QThread):
       self.wait()
 
    def run(self):
-      counter = 1
-      while True:
-         print 'UI Thread running'
-         self.emit(SIGNAL('update_video_counter(QString)'),str(counter)) 
-         counter += 1
-         time.sleep(2)
+      global __sub_socket__
+      global __sub_socket_connected__
 
+      counter = 1
+
+      while True:
+         if __sub_socket_connected__ == True:
+            # Read and process the PUB messages
+            status_message = __sub_socket__.recv()
+            print 'Read Status message = ', status_message
+            counter += 1
+            self.emit(SIGNAL('update_video_counter(QString)'),str(counter)) 
+         else:
+            print 'UI Thread Idle, socket not connected'
+            self.emit(SIGNAL('update_video_counter(QString)'),str(counter)) 
+            counter += 1
+            time.sleep(2)
  
 class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
    def __init__(self):
+      global __sub_socket__
+      global __sub_socket_connected__
+
       super(self.__class__, self).__init__()
       self.setupUi(self) 
 
@@ -65,18 +94,32 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
       self.ConnectPushButton.clicked.connect(self.connect_to_ports) 
       self.connected = False
 
-      # setup ZMQ context and create socket
+      # setup ZMQ context and create sockets
+      # Note that the sub_socket is global to the module because
+      # the thread needs to receive the SUB/PUB packets
       self.context = zmq.Context()
       self.req_socket = self.context.socket(zmq.REQ)
       self.req_socket_connected = False
+      __sub_socket__ = self.context.socket(zmq.SUB)
+      __sub_socket_connected__ = False
 
-      # Create the helper thread
       self.uiThread = PiCamUIThread()
       self.connect(self.uiThread, SIGNAL("update_video_counter(QString)"),self.update_video_counter)
       self.uiThread.start()
 
+      # Camera Busy indication
+      self.camera_is_busy = False
+
+   def SubscribeToFilter(self, FilterText, SubSocket):
+      if isinstance(FilterText, bytes):
+         FilterText = FilterText.decode('ascii')
+      SubSocket.setsockopt_string(zmq.SUBSCRIBE, FilterText)
+
    def update_video_counter(self,counter_text):
       self.videoSecondsLineEdit.setText(counter_text)
+
+   def update_timelapse_frames(self,frames_text):
+      self.timelapseFramesLineEdit.setText(frames_text)
 
    def send_camera_sensor_req(self, req_message):
       print req_message
@@ -88,6 +131,9 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
          print 'Socket not connected'
 
    def connect_to_ports(self):
+      global __sub_socket__
+      global __sub_socket_connected__
+
       if self.req_socket_connected == False:
          ip_addr = self.ipAddressLineEdit.text()
          ip_string = 'tcp://' + ip_addr + ':5557'
@@ -96,6 +142,13 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
          self.connectedCheckBox.setChecked(True)
       else:
          self.connectedCheckBox.setChecked(True)
+
+      if __sub_socket_connected__ == False:
+         ip_addr = self.ipAddressLineEdit.text()
+         ip_string = 'tcp://' + ip_addr + ':5558'
+         __sub_socket__.connect(str(ip_string))
+         self.SubscribeToFilter('SENSOR_PUB',__sub_socket__)
+         __sub_socket_connected__ = True
 
    def send_capture_image_message(self):
       image_size_text = self.imageSizeComboBox.currentText()
@@ -130,6 +183,7 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
       duration_text = str(video_seconds)
 
       sensor_req_message = 'SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=VIDEO,CMD=CAPTURE,SIZE=' + size_text + ',VFLIP=' + flip_text + ',DURATION=' + duration_text + ',FILE=' + video_file_name + ',SENSOR_REQ_END'
+      self.cameraStatusLineEdit.setText("BUSY")
       self.send_camera_sensor_req(sensor_req_message)
 
  
@@ -149,10 +203,15 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
       num_frames_text = str(self.timelapseFramesSpinBox.value())
       frame_delay_text = str(self.timelapseDelaySpinBox.value())
       sensor_req_message = 'SENSOR_REQ,DEV=PI_CAMERA,SUB_DEV=TIMELAPSE,CMD=CAPTURE,SIZE=' + message_size_text + ',VFLIP=' + flip_text + ',FILE_PRE=' + image_file_prefix + ',DELAY=' + frame_delay_text + ',FRAMES=' + num_frames_text + ',SENSOR_REQ_END'
+      self.cameraStatusLineEdit.setText("BUSY")
       self.send_camera_sensor_req(sensor_req_message)
 
+def init_globals():
+   global __sub_socket_connected__
+   __sub_socket_connected__ = False
 
 def main():
+   init_globals()
    app = QtGui.QApplication(sys.argv) 
    form = PiCamUIApp() 
    form.show() 
