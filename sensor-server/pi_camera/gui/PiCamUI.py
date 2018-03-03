@@ -44,13 +44,22 @@ class PiCamUIThread(QThread):
          if __sub_socket_connected__ == True:
             # Read and process the PUB messages
             status_message = __sub_socket__.recv()
-            print 'Read Status message = ', status_message
-            counter += 1
-            self.emit(SIGNAL('update_video_counter(QString)'),str(counter)) 
+            status_message_list = status_message.split(',')
+            if status_message_list[2] == 'SUB_DEV=VIDEO':
+               if status_message_list[2] == 'VIDEO_SECOND=DONE':
+                  self.emit(SIGNAL('update_camera_status(QString)'),'IDLE') 
+               else:
+                  status_seconds = status_message_list[2].split('=')
+                  seconds = seconds_list[1]
+                  self.emit(SIGNAL('update_video_counter(QString)'),seconds) 
+            elif status_message_list[2] == 'SUB_DEV=TIMELAPSE':
+               if status_message_list[2] == 'TIMELAPSE_FRAME=DONE':
+                  self.emit(SIGNAL('update_camera_status(QString)'),'IDLE') 
+               else:
+                  frames_list = status_message_list[2].split('=')
+                  frames = frames_list[1]
+                  self.emit(SIGNAL('update_timelapse_frames(QString)'),frames) 
          else:
-            print 'UI Thread Idle, socket not connected'
-            self.emit(SIGNAL('update_video_counter(QString)'),str(counter)) 
-            counter += 1
             time.sleep(2)
  
 class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
@@ -105,6 +114,8 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
 
       self.uiThread = PiCamUIThread()
       self.connect(self.uiThread, SIGNAL("update_video_counter(QString)"),self.update_video_counter)
+      self.connect(self.uiThread, SIGNAL("update_camera_status(QString)"),self.update_camera_status)
+      self.connect(self.uiThread, SIGNAL("update_timelapse_frames(QString)"),self.update_timelapse_frames)
       self.uiThread.start()
 
       # Camera Busy indication
@@ -120,6 +131,9 @@ class PiCamUIApp(QtGui.QMainWindow, PiCamUIDesign.Ui_MainWindow):
 
    def update_timelapse_frames(self,frames_text):
       self.timelapseFramesLineEdit.setText(frames_text)
+
+   def update_camera_status(self,status_text):
+      self.cameraStatusLineEdit.setText(status_text)
 
    def send_camera_sensor_req(self, req_message):
       print req_message
