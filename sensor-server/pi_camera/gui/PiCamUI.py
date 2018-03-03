@@ -49,7 +49,7 @@ class PiCamUIThread(QThread):
                if status_message_list[2] == 'VIDEO_SECOND=DONE':
                   self.emit(SIGNAL('update_camera_status(QString)'),'IDLE') 
                else:
-                  status_seconds = status_message_list[2].split('=')
+                  seconds_list = status_message_list[2].split('=')
                   seconds = seconds_list[1]
                   self.emit(SIGNAL('update_video_counter(QString)'),seconds) 
             elif status_message_list[2] == 'SUB_DEV=TIMELAPSE':
