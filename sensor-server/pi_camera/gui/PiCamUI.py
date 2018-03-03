@@ -46,17 +46,17 @@ class PiCamUIThread(QThread):
             status_message = __sub_socket__.recv()
             status_message_list = status_message.split(',')
             if status_message_list[2] == 'SUB_DEV=VIDEO':
-               if status_message_list[2] == 'VIDEO_SECOND=DONE':
+               if status_message_list[3] == 'VIDEO_SECOND=DONE':
                   self.emit(SIGNAL('update_camera_status(QString)'),'IDLE') 
                else:
-                  seconds_list = status_message_list[2].split('=')
+                  seconds_list = status_message_list[3].split('=')
                   seconds = seconds_list[1]
                   self.emit(SIGNAL('update_video_counter(QString)'),seconds) 
             elif status_message_list[2] == 'SUB_DEV=TIMELAPSE':
-               if status_message_list[2] == 'TIMELAPSE_FRAME=DONE':
+               if status_message_list[3] == 'TIMELAPSE_FRAME=DONE':
                   self.emit(SIGNAL('update_camera_status(QString)'),'IDLE') 
                else:
-                  frames_list = status_message_list[2].split('=')
+                  frames_list = status_message_list[3].split('=')
                   frames = frames_list[1]
                   self.emit(SIGNAL('update_timelapse_frames(QString)'),frames) 
          else:
