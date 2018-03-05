@@ -27,18 +27,6 @@ fi
 #
 python /home/pi/PiControl/piui/piui_menu.py &
 
-
-#
-# Start the required sensor-servers
-#
-# Start one of the sensor servers depending on the hardware
-# that is attached. 
-# Make sure the corresponding picontrol support module is started as well
-#
-python /home/pi/PiControl/sensor-server/adafruit_sensors/sensor_server.py &
-python /home/pi/PiControl/sensor-server/enviro_phat/sensor_server.py &
-python /home/pi/PiControl/sensor-server/pi_camera/pi_camera_server.py &
-
 #
 # PiControl
 # Can comment out/clone picontrol-sensor and picontrol-executive if needed
